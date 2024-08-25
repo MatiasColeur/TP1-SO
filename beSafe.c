@@ -2,6 +2,8 @@
 
 #include "beSafe.h"
 
+// Number of positions added while being reallocated in heap memory. Must be >0:
+
 #define BLOCK 5
 
 
@@ -10,28 +12,44 @@
 typedef struct tHeap    {
 
 	void ** inUse;
+	unsigned int using;
 	unsigned int size;
 
-}  tHeap;
+} * tHeap;
 
 //For security there always is an instance of a tHeap with pointers to every dynamic variable. 
 //So if an error ocurs all are accesible to free:
 
-static tHeap heap;
+static tHeap heap = calloc(1, sizeof(struct tHeap));
 
-//freeHeap(): free all dynamic variables saved in the static variable @heap.inUse[].
-//	Then free @heap.inUse structure.
+static void newHeapVariable(void * new)	{
+	
+	if(heap->using == size)	{
+		
+		heap = realloc(heap, size + BLOCK*sizeof(void*));
+		
+	//Assuming BLOCK > 0, if heap = NULL there is an error:
+		errorManagement(heap == NULL, "Memory reallocated failed");		
+	}
+
+	heap->inUse[using++] = new;
+}
+
+
+//freeHeap(): free all dynamic variables saved in the static variable @heap->inUse[].
+//	Then free @heap->inUse structure. Then free @heap.
 
 static void freeHeap()  {
 
 	int i=0;      
 	
-	while(i<heap.size)      {
+	while(i<heap->size)      {
 	
-		free(heap.inUse[i++]);
+		free(heap->inUse[i++]);
 	}
 
-	free(heap.inUse);
+	free(heap->inUse);
+	free(heap);
 }
 
 
@@ -78,6 +96,8 @@ int * safePipeD(void)	{
 	int * pipefd = malloc( 2 * sizeof(int) );
 	
 	errorManagement(pipefd == NULL, "Memory allocated failed");
+
+	
 
 	safePipe(pipefd);
 	
