@@ -8,9 +8,13 @@
 	#include <unistd.h>
 	#include <errno.h>
 
+
+
 //errorManagement(): checks if @errorConditionResult is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
 
 	void errorManagement(int errorConditionResult, const char * errorMessage);
+
+
 
 //safeFork(void): calls fork() wrapping the error management.
 
@@ -19,6 +23,8 @@
 //		>0 means parent process, in this case @return=child pid.
 
 	pid_t safeFork(void);
+
+
 
 //safePipe(): calls pipe() wrapping the error management.
 
@@ -29,10 +35,12 @@
 
 	void safePipe(int pipefd[]);
 
+
+
 //safePipeD(): same as safePipe() without a static vector as argument.
 
 //	@return instance of pipefd. See safePipe().
 
 	int * safePipeD(void);
 
-#endif
+	#endif
