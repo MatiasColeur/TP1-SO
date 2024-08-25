@@ -27,6 +27,10 @@ static struct tHeapMonitor heapMonitor =	{
 	.size = 0
 };
 
+//newHeapVariable(): save a pointer to the new heap object in an internal structure to centralize them. 
+
+//	@new: is a pointer to the new object to save.
+
 static void newHeapVariable(void * new)	{
 	
 	if(heapMonitor.using == heapMonitor.size)	{
