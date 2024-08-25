@@ -86,7 +86,8 @@ pid_t safeFork(void)	{
 
 void safePipe(int pipefd[])	{
 
-	errorManagement(pipe(pipefd) == -1, "Pipe failed");
+	int returnValue = pipe(pipefd);
+	errorManagement(returnValue == -1, "Pipe failed");
 }
 
 
