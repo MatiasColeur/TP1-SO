@@ -32,7 +32,7 @@ static void newHeapVariable(void * new)	{
 		errorManagement(heap == NULL, "Memory reallocated failed");		
 	}
 
-	heap->inUse[using++] = new;
+	heap->inUse[using++] = (void *) new;
 }
 
 
@@ -97,7 +97,7 @@ int * safePipeD(void)	{
 	
 	errorManagement(pipefd == NULL, "Memory allocated failed");
 
-	
+	newHeapVariable(pipefd);
 
 	safePipe(pipefd);
 	
