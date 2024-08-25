@@ -50,10 +50,8 @@ static void newHeapVariable(void * new)	{
 }
 
 
-//freeHeap(): free all dynamic variables saved in the static variable @heap->array[].
-//	Then free @heap->array structure. Then free @heap.
 
-static void freeHeap()  {
+void freeHeap()  {
 
 	int i=0;      
 
