@@ -1,5 +1,5 @@
 //beSafe.h
-//version 0.4.1
+//version 0.5.0
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
@@ -11,9 +11,9 @@
 
 
 
-//errorManagement(): checks if @errorConditionResult is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
+//errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
 
-	void errorManagement(int errorConditionResult, const char * errorMessage);
+	void errorManagement(int condition, const char * errorMessage);
 
 
 

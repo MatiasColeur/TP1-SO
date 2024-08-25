@@ -9,57 +9,73 @@
 
 //Structure for heap management:
 
-typedef struct tHeap    {
+struct tHeapMonitor	{
 
-	void ** inUse;
+	void ** array;
 	unsigned int using;
 	unsigned int size;
 
-} * tHeap;
+};
 
-//For security there always is an instance of a tHeap with pointers to every dynamic variable. 
-//So if an error ocurs all are accesible to free:
+//For security there always is an instance of a heapMonitor with an array with pointers to every dynamic object. So if an error ocurs all are accesible to free:
 
-static tHeap heap = calloc(1, sizeof(struct tHeap));
+static struct tHeapMonitor heapMonitor =	{
+
+//.array will be fill when newHeapVariable() is called:
+	.array = NULL,
+	.using = 0,
+	.size = 0
+};
 
 static void newHeapVariable(void * new)	{
 	
-	if(heap->using == size)	{
+	if(heapMonitor.using == heapMonitor.size)	{
 		
-		heap = realloc(heap, size + BLOCK*sizeof(void*));
+		heapMonitor.array = realloc( heapMonitor.array, 
+			heapMonitor.size + BLOCK * sizeof(void*) );
 		
 	//Assuming BLOCK > 0, if heap = NULL there is an error:
-		errorManagement(heap == NULL, "Memory reallocated failed");		
+
+		errorManagement(heapMonitor.array == NULL, 
+			"Memory reallocated failed");		
+
+		heapMonitor.size+= BLOCK;
 	}
 
-	heap->inUse[using++] = (void *) new;
+	heapMonitor.array[heapMonitor.using++] = (void *) new;
 }
 
 
-//freeHeap(): free all dynamic variables saved in the static variable @heap->inUse[].
-//	Then free @heap->inUse structure. Then free @heap.
+//freeHeap(): free all dynamic variables saved in the static variable @heap->array[].
+//	Then free @heap->array structure. Then free @heap.
 
 static void freeHeap()  {
 
 	int i=0;      
+
+//free every object using heap memory:
+
+	while(i<heapMonitor.size)      {
 	
-	while(i<heap->size)      {
-	
-		free(heap->inUse[i++]);
+		free(heapMonitor.array[i++]);
 	}
 
-	free(heap->inUse);
-	free(heap);
+//Then free the array field in heapMonitor. If .array = NULL nothing happens:
+
+	free(heapMonitor.array);
 }
 
 
 
-void errorManagement(int errorConditionResult, const char * errorMessage)	{
+void errorManagement(int condition, const char * errorMessage)	{
 
 	if(condition)	{
 	
 	//Free all the dynamic variables currently in use before exiting:
+
 		freeHeap();
+
+	//Then handle errors as expected:
 
 		perror(errorMessage);
 		exit(EXIT_FAILURE);
@@ -70,7 +86,8 @@ void errorManagement(int errorConditionResult, const char * errorMessage)	{
 
 pid_t safeFork(void)	{
 
-//Fork:instantiating
+//Instantiating fork:
+
 	pid_t pid = fork();
 
 //pid = -1 means error:
