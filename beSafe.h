@@ -1,5 +1,5 @@
 //beSafe.h
-//version 0.5.1
+//version 0.5.2
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
@@ -12,6 +12,11 @@
 
 
 //errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
+
+//	@condition: Result of a comparation with an error return value.
+//	@errorMessage: String of error message, this will be argument of perror().
+
+//	Call example: errorManagement(fork() == -1, "Fork failed"); //When calling fork(), -1 is returned if there is an error.
 
 	void errorManagement(int condition, const char * errorMessage);
 
@@ -43,5 +48,12 @@
 //	@return instance of pipefd. See safePipe().
 
 	int * safePipeD(void);
+
+
+
+//freeHeap(): free all dynamic variables saved in an internal structure with pointersto every dynamic object instantiated from this library. Optional use.
+
+	void freeHeap();
+
 
 	#endif
