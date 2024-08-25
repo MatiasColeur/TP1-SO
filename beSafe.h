@@ -1,4 +1,5 @@
 //beSafe.h
+//version 0.3.1
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
