@@ -1,5 +1,5 @@
 //beSafe.h
-//version 0.5.3
+//version 0.6.0
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
@@ -32,6 +32,27 @@
 
 
 
+//safeWait(): calls wait(@wstatus) wrapping error management.
+
+//See wait() linux manual for more information about its parameters.
+
+//	@return the process ID of the terminated child.
+
+	pid_t safeWait(int *_Nullable wstatus);
+
+
+
+//safeWaitpid(): calls waitpid() wrapping the error management. 
+
+//See waitpid() linux manual for more information about its parameters.
+
+//	@return the process ID of the child whose state has changed. 
+//	If WNOHANG was specified and one or more child(ren) specified by pid exist, but have not yet changed state, then 0 is returned. See waitpid() manual for more information.
+
+	pid_t safeWaitpid(pid_t pid, int *_Nullable wstatus, int options);	
+
+
+
 //safePipe(): calls pipe() wrapping the error management.
 
 //	@pipefd: is a 2 slots vector of integers. Is used to return two files descriptors referring to the ends of the pipe as follows:
@@ -56,4 +77,5 @@
 	void freeHeap();
 
 
-	#endif
+
+#endif

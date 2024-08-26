@@ -103,6 +103,32 @@ pid_t safeFork(void)	{
 
 
 
+pid_t safeWaitpid(pid_t pid, int *_Nullable wstatus, int options)	{
+
+//Wait:
+	pid_t w = waitpid(pid, wstatus, options);
+
+//If waitpid returns -1 means error:
+
+	errorManagement(w == -1, "Wait failed");
+
+//It is fine:
+
+	return w;
+
+}
+
+
+
+pid_t safeWait(int *_Nullable wstatus)	{
+
+//From wait() manual: wait(&status) == waitpid(-1, &wstatus, 0);
+
+	return safeWaitpid(-1, wstatus, 0);
+}
+
+
+
 void safePipe(int pipefd[])	{
 
 	int returnValue = pipe(pipefd);
