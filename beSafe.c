@@ -103,7 +103,7 @@ pid_t safeFork(void)	{
 
 
 
-pid_t safeWaitpid(pid_t pid, int *_Nullable wstatus, int options)	{
+pid_t safeWaitpid(pid_t pid, int * wstatus, int options)	{
 
 //Wait:
 	pid_t w = waitpid(pid, wstatus, options);
@@ -120,7 +120,7 @@ pid_t safeWaitpid(pid_t pid, int *_Nullable wstatus, int options)	{
 
 
 
-pid_t safeWait(int *_Nullable wstatus)	{
+pid_t safeWait(int * wstatus)	{
 
 //From wait() manual: wait(&status) == waitpid(-1, &wstatus, 0);
 

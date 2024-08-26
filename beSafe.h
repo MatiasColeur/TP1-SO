@@ -1,5 +1,5 @@
 //beSafe.h
-//version 0.6.0
+//version 0.6.1
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
@@ -8,7 +8,7 @@
 	#include <stdlib.h>
 	#include <unistd.h>
 	#include <errno.h>
-
+	#include <sys/wait.h>
 
 
 //errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
@@ -38,7 +38,7 @@
 
 //	@return the process ID of the terminated child.
 
-	pid_t safeWait(int *_Nullable wstatus);
+	pid_t safeWait(int * wstatus);
 
 
 
@@ -49,7 +49,7 @@
 //	@return the process ID of the child whose state has changed. 
 //	If WNOHANG was specified and one or more child(ren) specified by pid exist, but have not yet changed state, then 0 is returned. See waitpid() manual for more information.
 
-	pid_t safeWaitpid(pid_t pid, int *_Nullable wstatus, int options);	
+	pid_t safeWaitpid(pid_t pid, int * wstatus, int options);	
 
 
 
