@@ -1,5 +1,5 @@
 //slave.c
-
+// programa para probar las funciones, hay que hacer la comunicación entre aplication y slave con un pipe, no args
 #include <stdio.h>
 #include <string.h>
 #include "beSafe.h"

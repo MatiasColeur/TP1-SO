@@ -139,7 +139,7 @@ void safePipe(int pipefd[])	{
 
 int * safePipeD(void)	{
 
-	int * pipefd = malloc( 2 * sizeof(int) );
+	int * pipefd = (int *) malloc( 2 * sizeof(int) );
 	
 	errorManagement(pipefd == NULL, "Memory allocated failed");
 
