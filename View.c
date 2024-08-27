@@ -1,0 +1,6 @@
+//view.c
+
+int main()	{
+
+	;
+}

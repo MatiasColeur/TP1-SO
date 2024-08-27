@@ -1,0 +1,6 @@
+//aplication.c
+
+int mian()	{
+
+	;
+}
