@@ -7,6 +7,9 @@
 #define BLOCK 5
 
 
+void * safeAlloc(void * ptr);
+
+
 //Structure for heap management:
 
 struct tHeapMonitor	{
@@ -35,14 +38,8 @@ static void newHeapVariable(void * new)	{
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
-		heapMonitor.array = realloc( heapMonitor.array, 
-			heapMonitor.size + BLOCK * sizeof(void*) );
-		
-	//Assuming BLOCK > 0, if heap = NULL there is an error:
-
-		errorManagement(heapMonitor.array == NULL, 
-			"Memory reallocated failed");		
-
+		heapMonitor.array = safeAlloc( realloc(heapMonitor.array,
+			heapMonitor.size + BLOCK * sizeof(void*)) );		
 		heapMonitor.size+= BLOCK;
 	}
 
@@ -82,6 +79,39 @@ void errorManagement(int condition, const char * errorMessage)	{
 		perror(errorMessage);
 		exit(EXIT_FAILURE);
 	}
+}
+
+
+
+void * safeAlloc(void * ptr)	{
+
+	errorManagement(ptr == NULL, "Memory allocated failed");
+
+	newHeapVariable(ptr);
+
+	return ptr;
+
+}
+
+
+
+void * safeMalloc(size_t size)	{
+
+	return safeAlloc(malloc(size));
+}
+
+
+
+void * safeCalloc(size_t nmemb, size_t size)	{
+	
+	return safeAlloc(calloc(nmemb, size));
+}
+
+
+
+void * safeRealloc(void * ptr, size_t size)	{
+
+	return safeAlloc(realloc(ptr, size));
 }
 
 
@@ -139,11 +169,7 @@ void safePipe(int pipefd[])	{
 
 int * safePipeD(void)	{
 
-	int * pipefd = (int *) malloc( 2 * sizeof(int) );
-	
-	errorManagement(pipefd == NULL, "Memory allocated failed");
-
-	newHeapVariable(pipefd);
+	int * pipefd = (int *) safeMalloc( 2*sizeof(int) );
 
 	safePipe(pipefd);
 	

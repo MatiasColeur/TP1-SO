@@ -1,5 +1,4 @@
 //beSafe.h
-//version 0.6.1
 
 #ifndef BE_SAFE_H
 #define	BE_SAFE_H
@@ -19,6 +18,28 @@
 //	Call example: errorManagement(fork() == -1, "Fork failed"); //When calling fork(), -1 is returned if there is an error.
 
 	void errorManagement(int condition, const char * errorMessage);
+
+
+
+//safeMalloc(): Allocates @size bytes and returns a pointer to the allocated memory. The memory is not initialized. If size is 0, then safeMalloc() returns a unique pointer value that can later be successfully passed to free(). Handling all errors.
+
+	void * safeMalloc(size_t size);
+
+
+
+//safeCalloc():  allocates memory for an array of @nmemb elements of @size bytes each and returns a pointer to the allocated memory. The memory is set to zero. If @nmemb or @size is 0, then safeCalloc() returns a unique pointer value that can later be successfully passed to free(). Handling errors.
+
+	void * safeCalloc(size_t nmemb, size_t size);
+
+
+
+//realloc(): If @ptr is NULL, then the call is equivalent to safeMalloc(@size), for all values of @size.
+
+//	If @size is equal to zero, and @ptr is not NULL, then the call is equivalent to free(@ptr).
+
+//     Unless @ptr is NULL, it must have been returned by an earlier call to safeMalloc() or related functions. If the area pointed to was moved, a free(ptr) is done.
+
+	void * safeRealloc(void * ptr, size_t size);
 
 
 
