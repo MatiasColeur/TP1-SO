@@ -7,9 +7,6 @@
 #define BLOCK 5
 
 
-void * safeAlloc(void * ptr);
-
-
 //Structure for heap management:
 
 struct tHeapMonitor	{
@@ -30,11 +27,18 @@ static struct tHeapMonitor heapMonitor =	{
 	.size = 0
 };
 
-//newHeapVariable(): save a pointer to the new heap object in an internal structure to centralize them. 
+//newHeapVariable(): save a pointer to the new heap object in an internal structure to centralize them. If @new is repeated, nothing happen.
 
 //	@new: is a pointer to the new object to save.
 
 static void newHeapVariable(void * new)	{
+
+	for(int i=0; i<heapMonitor.using; ++i)	{
+
+		if(heapMonitor.array[i] == new)
+			return;
+	}
+
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
@@ -51,13 +55,41 @@ static void newHeapVariable(void * new)	{
 
 
 
+static void removeFromHeapList(void * p)	{
+
+	for(int i=0; i<heapMonitor.using; ++i)	{
+
+		if(heapMonitor.array[i]==p)	{
+
+			heapMonitor.array[i] = heapMonitor.array[heapMonitor.using-1];
+			heapMonitor.using--;
+		}
+	}
+
+}
+
+/*int main()	{
+
+	int * p1 = safeMalloc(sizeof(int));
+	int * p2 = safeCalloc(1, sizeof(int));
+	p1 = safeRealloc(p1, 2 * sizeof(int));
+	
+	void * pV = (void *) p1;
+	
+	freeHeap();
+	return 0;
+
+
+}*/
+
+
 void freeHeap()  {
 
 	int i=0;      
 
 //free every object using heap memory:
 
-	while(i<heapMonitor.size)      {
+	while(i<heapMonitor.using)      {
 	
 		free(heapMonitor.array[i++]);
 	}
@@ -86,7 +118,7 @@ void errorManagement(int condition, const char * errorMessage)	{
 
 
 
-void * safeAlloc(void * ptr)	{
+static void * safeAlloc(void * ptr)	{
 
 	errorManagement(ptr == NULL, "Memory allocated failed");
 
@@ -114,6 +146,9 @@ void * safeCalloc(size_t nmemb, size_t size)	{
 
 void * safeRealloc(void * ptr, size_t size)	{
 
+//Needed because realloc will free the old heap memory address so freeHeap() will try to free already free memory. Deleting the old memory address and adding the new one everyone is safe:
+
+	removeFromHeapList(ptr);
 	return safeAlloc(realloc(ptr, size));
 }
 
