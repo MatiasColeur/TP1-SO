@@ -38,8 +38,11 @@ static void newHeapVariable(void * new)	{
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
-		heapMonitor.array = safeAlloc( realloc(heapMonitor.array,
-			heapMonitor.size + BLOCK * sizeof(void*)) );		
+		heapMonitor.array = realloc(heapMonitor.array, 
+			heapMonitor.size + BLOCK * sizeof(void*));
+
+		errorManagement(heapMonitor.array == NULL, "Memory allocated failed");	
+		
 		heapMonitor.size+= BLOCK;
 	}
 
