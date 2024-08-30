@@ -89,7 +89,7 @@ char * getHash(const char * path)	{
 
 	if(path == NULL)	return NULL;	
 
-        char * buffer = safeCalloc(HASH_LENGTH+2, 1);
+        char * buffer = safeCalloc(HASH_LENGTH+2, sizeof(char));
 	char * input = getHashInput(path);
 
         FILE * file = popen(input, TYPE);
