@@ -15,10 +15,33 @@ char * getHashInput(const char * path);
 
 int main(int argc, char * argv[])	{
 
-
-	char * a = getHash(argv[1]);
+//Hash number
 	
-	printf(a);
+	printf("%s:", getHash(argv[1]));
+
+//Looking for file name:
+
+        int i=0; while(argv[1][i++]!=0);
+        int j=--i; 
+	while(argv[1][j]!='/' &&  j!=0)	{
+		j--;
+	}
+
+        char * fileName = safeCalloc(i-j, 1);
+
+        int k=0;
+        while(argv[1][j]!=0)       {
+
+                fileName[k++] = argv[1][j++];
+        }
+
+        printf("%s:", fileName);
+
+//Looking for slave ID:
+
+        int pid = (int) getpid();
+
+	printf("%d", pid);
 
 	freeHeap();
 	
@@ -89,14 +112,12 @@ char * getHash(const char * path)	{
 
 	if(path == NULL)	return NULL;	
 
-        char * buffer = safeCalloc(HASH_LENGTH+2, sizeof(char));
+        char * buffer = safeCalloc(HASH_LENGTH+1, sizeof(char));
 	char * input = getHashInput(path);
 
         FILE * file = popen(input, TYPE);
 
-        fgets(buffer, HASH_LENGTH+2, file);
-
-	strcat(buffer, "\n");	
+        fgets(buffer, HASH_LENGTH+1, file);
 
 	return buffer; 
 
