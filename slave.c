@@ -11,6 +11,9 @@
 #define TYPE "r"		// Read file.
 #define SEPARATOR '\n'		// Char for differentiate paths.
 
+#define nullretnull(x) if((x) == NULL) return NULL
+
+
 char * getHash(const char * path);
 char * getHashInput(const char * path);
 char * getFileName(const char * path);
@@ -21,33 +24,40 @@ int main(int argc, char * argv[])	{
 	int i = 0;
 
 	int readReturn;
+	
+	char * hash;
+	char * name;
+	int pid;
 
 	while((readReturn = read(STDIN_FILENO, buf+i, 1)) > 0)	{
 	
 		errorManagement(readReturn == -1, "Read failed");	
 
-		if(SEPARATOR == buf[i])	{
+		if(SEPARATOR == buf[i++])	{
 
 		//Delete the SEPARATOR (is not part of the input path):	
 
-			buf[i] = '\0';
+			buf[--i] = '\0';
 
 		//Hash number:
 	
-			char * hash = getHash(buf);
+			hash = getHash(buf);
 
 		//Looking for file name:
 
-        		char * name = getFileName(buf);
+        		name = getFileName(buf);
 
 		//Looking for slave ID:
 
-        		int pid = (int) getpid();
+        		pid = (int) getpid();
 
-		//Result:
+		//Everything is ok? (getpid() is always successful)
 			
-			printf("%s <-> %d <-> %s\n", name, pid, hash);
+			if(hash != NULL && name != NULL)	{
 			
+				printf("%s-%d-%s\n", name, pid, hash);
+			}
+					
 		//Reset buffer:
 		
 			i = 0;
@@ -60,9 +70,6 @@ int main(int argc, char * argv[])	{
 	
 			freeHeap();
 		}
-
-		i++;		
-
 	}
 
 	killHeapMonitor();
@@ -73,22 +80,42 @@ int main(int argc, char * argv[])	{
 
 char * getHash(const char * path)	{
 
-	if(path == NULL)	return NULL;	
+	nullretnull(path);
 
         char * buffer = safeCalloc(HASH_LENGTH+1, sizeof(char));
+	
+//Get command input:
+
 	char * input = getHashInput(path);
+
+	nullretnull(input);
+
+//Call command (the file is assumed to exist):
 
         FILE * file = popen(input, TYPE);
 
+	errorManagement(file == NULL, "popen failed");
+
+//Get output as string:
+
         fgets(buffer, HASH_LENGTH+1, file);
+
+//Close the file, handling the error:
+
+	int closed = pclose(file);
+
+	errorManagement(closed == -1, "pclose failed");
 
 	return buffer; 
 
 }
 
+
+
 char * getHashInput(const char * path)	{
 
-	
+	nullretnull(path);
+
 	char * input = safeCalloc(1+strlen(COMMAND)+strlen(path), sizeof(char));
 	
         strcat(input, COMMAND);
@@ -99,13 +126,22 @@ char * getHashInput(const char * path)	{
 
 }
 
+
+
 char * getFileName(const char * path)	{
+
+	nullretnull(path);	
+
+//Find the '/' (useful when @path is an absolute path):
 
         int i=0; while(path[i++]!=0);
         int j=--i; 
 	while(path[j]!='/' &&  j!=0)	{
+
 			j--;
 	}
+
+//To return:
 
         char * fileName = safeCalloc(i-j, 1);
 
