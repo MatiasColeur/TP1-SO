@@ -14,7 +14,7 @@ struct tHeapMonitor	{
 	void ** array;
 	unsigned int using;
 	unsigned int size;
-
+	char alive;
 };
 
 //For security there always is an instance of a heapMonitor with an array with pointers to every dynamic object. So if an error ocurs all are accesible to free:
@@ -24,7 +24,8 @@ static struct tHeapMonitor heapMonitor =	{
 //.array will be fill when newHeapVariable() is called:
 	.array = NULL,
 	.using = 0,
-	.size = 0
+	.size = 0,
+	.alive = TRUE
 };
 
 //newHeapVariable(): save a pointer to the new heap object in an internal structure to centralize them. If @new is repeated, nothing happen.
@@ -94,9 +95,27 @@ void freeHeap()  {
 		free(heapMonitor.array[i++]);
 	}
 
-//Then free the array field in heapMonitor. If .array = NULL nothing happens:
+//heapMonitor now is empty (It will allocate new memory for it if new heap variables are used):
 
+	heapMonitor.size = 0;
+	heapMonitor.using = 0;
+	heapMonitor.array = NULL;
 	free(heapMonitor.array);
+}
+
+
+
+void killHeapMonitor()	{
+
+//If heapMonitor is alive then kill it:
+
+	if(heapMonitor.alive == TRUE )	{
+
+	//Free the array field in heapMonitor. If .array = NULL nothing happens:
+	
+		free(heapMonitor.array);
+		heapMonitor.alive = FALSE;
+	}
 }
 
 
@@ -108,6 +127,10 @@ void errorManagement(int condition, const char * errorMessage)	{
 	//Free all the dynamic variables currently in use before exiting:
 
 		freeHeap();
+
+	//Free heap monitor:
+
+		killHeapMonitor();
 
 	//Then handle errors as expected:
 

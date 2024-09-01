@@ -8,6 +8,9 @@
 	#include <unistd.h>
 	#include <errno.h>
 	#include <sys/wait.h>
+	
+	#define TRUE 1
+	#define FALSE !TRUE
 
 
 //errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
@@ -98,5 +101,9 @@
 	void freeHeap();
 
 
+
+//killHeapMonitor(): Kills the montitor. This should be use at the end of the program.
+
+	void killHeapMonitor();
 
 #endif
