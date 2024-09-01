@@ -9,101 +9,64 @@
 #define COMMAND "md5sum"	// Must be a string.
 #define HASH_LENGTH 32		// Same for all hash numbers.
 #define TYPE "r"		// Read file.
+#define SEPARATOR '\n'		// Char for differentiate paths.
 
 char * getHash(const char * path);
 char * getHashInput(const char * path);
+char * getFileName(const char * path);
 
 int main(int argc, char * argv[])	{
 
-//Hash number
+	char buf [100] = {0};
+	int i = 0;
+
+	int readReturn;
+
+	while((readReturn = read(STDIN_FILENO, buf+i, 1)) > 0)	{
 	
-	printf("%s:", getHash(argv[1]));
+		errorManagement(readReturn == -1, "Read failed");	
 
-//Looking for file name:
+		if(SEPARATOR == buf[i])	{
 
-        int i=0; while(argv[1][i++]!=0);
-        int j=--i; 
-	while(argv[1][j]!='/' &&  j!=0)	{
-		j--;
+		//Delete the SEPARATOR (is not part of the input path):	
+
+			buf[i] = '\0';
+
+		//Hash number:
+	
+			char * hash = getHash(buf);
+
+		//Looking for file name:
+
+        		char * name = getFileName(buf);
+
+		//Looking for slave ID:
+
+        		int pid = (int) getpid();
+
+		//Result:
+			
+			printf("%s <-> %d <-> %s\n", name, pid, hash);
+			
+		//Reset buffer:
+		
+			i = 0;
+			for(int j=0; buf[j]!=0; j++)	{
+					
+				buf[j] = 0;
+			}
+
+		//Free for all heap variables:
+	
+			freeHeap();
+		}
+
+		i++;		
+
 	}
 
-        char * fileName = safeCalloc(i-j, 1);
-
-        int k=0;
-        while(argv[1][j]!=0)       {
-
-                fileName[k++] = argv[1][j++];
-        }
-
-        printf("%s:", fileName);
-
-//Looking for slave ID:
-
-        int pid = (int) getpid();
-
-	printf("%d", pid);
-
-	freeHeap();
-	
-	return 0;
-/*
-	errorManagement(argc != 1, 
-		"Slave main failed. No arguments expected\n");
-
-//View process needs: Name of file, Md5 and slave ID.
-
-//Looking for file name:
-
-	char * path = argv[1];
-
-	int i=0; while(path[++i]!=0);
-	int j=i; while(path[--j]!='\\');
-
-	char * fileName = calloc(strlen(path+j), sizeof(char));
-
-	int k=0;
-	while(path[j]!=0)	{
-
-		fileName[k++] = path[j++];
-	}
-
-	printf("File name: %s\n", fileName);
-
-//Looking for Md5: (No debe volcar el resultado a un archivo en disco, para luego leerlo desde el esclavo, deberá recibir el output de md5sum utilizando algún mecanismo de IPC más sofisticado. Hice literalmente eso, solo para probar las funciones)
-
-//input will be COMMAND + " " + filepath:
-
-	char * input = calloc(1+strlen("md5sum")+strlen(argv[1]), sizeof(char));
-	
-	strcat(input, COMMAND);
-	strcat(input, " ");
-	strcat(input, argv[1]);
-	
-	char buffer [2000] = {0};
-	FILE * file = popen(input, TYPE);
-
-	fscanf(file, buffer);
-	
-	char md5[200] = {0};
-	strcat(md5, buffer);
-
-	free(input);
-	
-//Looking for slave ID:
-
-	char slaveID [3] = {0};
-	int pid = (int) getpid();
-	
-	int l=1;
-	while(pid!=0)	{
-		slaveID[l--] = pid%10;
-		pid = pid/10;
-	}
-
-
-	printf("File Name: %s\nMd5: %s\nSlave ID: %s",fileName, md5, slaveID);
-
-	free(fileName);*/
+	killHeapMonitor();
+	exit(EXIT_SUCCESS);
 }
 
 
@@ -136,3 +99,21 @@ char * getHashInput(const char * path)	{
 
 }
 
+char * getFileName(const char * path)	{
+
+        int i=0; while(path[i++]!=0);
+        int j=--i; 
+	while(path[j]!='/' &&  j!=0)	{
+			j--;
+	}
+
+        char * fileName = safeCalloc(i-j, 1);
+
+        int k=0;
+        while(path[j]!=0)       {
+
+                fileName[k++] = path[j++];
+        }
+		
+	return fileName;
+}
