@@ -4,6 +4,7 @@
 #define SHM_ADT_H
 	
 	#include "heap.h"
+	#include <stdlib.h>
 	#include <fcntl.h>
 	#include <sys/mman.h>
 	#include <unistd.h>
@@ -16,9 +17,9 @@
 
 	void killShared(sharedADT shm);
 
-	void mapToMemory(size_t len, int prot, int flags, int fd);
+	void mapToMemory(sharedADT shm, size_t len, int prot, int flags);
 
-	void unmap(size_t length);
+	void unmap(sharedADT shm, size_t length);
 
 
 #endif
