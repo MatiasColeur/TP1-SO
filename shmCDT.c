@@ -21,7 +21,7 @@ sharedADT createShm(char * name, size_t size) {
 	shm->size = size;
 	shm->name = name;
 
-	shm->shm_fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR);
+	shm->shm_fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0666);
 	if (shm->shm_fd == -1) {
 		perror("shm_open");
 		free(shm);
