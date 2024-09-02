@@ -44,7 +44,7 @@
 
 
 
-//freeHeap(): free all dynamic variables saved in an internal structure with pointersto every dynamic object instantiated from this library. 
+//freeHeap(): free all dynamic variables saved in an internal structure with pointers to every dynamic object instantiated from this library. 
 
 	void freeHeap();
 
