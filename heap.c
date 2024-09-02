@@ -98,8 +98,12 @@ void killHeapMonitor()	{
 
 	if(heapMonitor.alive == TRUE )	{
 
+	//Free all the variables:
+
+		freeHeap();
+
 	//Free the array field in heapMonitor. If .array = NULL nothing happens:
-	
+		
 		free(heapMonitor.array);
 		heapMonitor.alive = FALSE;
 	}

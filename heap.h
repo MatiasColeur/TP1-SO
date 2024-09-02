@@ -36,13 +36,13 @@
 
 
 
-//freeHeap(): free all dynamic variables saved in an internal structure with pointersto every dynamic object instantiated from this library. Optional use.
+//freeHeap(): free all dynamic variables saved in an internal structure with pointersto every dynamic object instantiated from this library. 
 
 	void freeHeap();
 
 
 
-//killHeapMonitor(): Kills the montitor. This should be use at the end of the program.
+//killHeapMonitor(): Kills the montitor. This should be use at the end of the program. It also calls freeHeap() so all the heap variables will be free.
 
 	void killHeapMonitor();
 
