@@ -1,14 +1,25 @@
 //shmCDT.c
 
 #include "shmADT.h"
-//TO DO
-shared_t * newShared(void * content)	{
 
-	shared_t * shm = safeCalloc(1, sizeof(shared_t));
+struct sharedCDT   {
+
+	int shm_fd;
+	void * mapped;
+	char * name;
+	sem_t * semaphore;
+
+}; 
+
+
+//TO DO
+sharedADT newShared(void * content)	{
+
+	sharedADT shm = safeCalloc(1, sizeof(sharedADT[0]));
 	return shm;
 }
 //TO do
-void killShared(shared_t * shm)	{
+void killShared(sharedADT shm)	{
 
 	;
 }
