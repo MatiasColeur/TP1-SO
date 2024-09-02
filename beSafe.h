@@ -9,7 +9,8 @@
 	#include <errno.h>
 	#include <sys/wait.h>
 	#include "heap.h"
-	
+
+//WARNING! This library includes and uses the heap.h library; for heap memory variables, use only heap.h functions.
 
 //errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
 
