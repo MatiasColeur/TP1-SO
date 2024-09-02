@@ -21,7 +21,6 @@ struct tHeapMonitor	{
 
 static struct tHeapMonitor heapMonitor =	{
 
-//.array will be fill when newHeapVariable() is called:
 	.array = NULL,
 	.using = 0,
 	.size = 0,
@@ -55,6 +54,7 @@ static void newHeapVariable(void * new)	{
 }
 
 
+//removeFromHeapList():	Removes @p from @heapMonitor.array.
 
 static void removeFromHeapList(void * p)	{
 
@@ -75,18 +75,15 @@ void freeHeap()  {
 
 	int i=0;      
 
-//free every object using heap memory:
-
 	while(i<heapMonitor.using)      {
 	
 		free(heapMonitor.array[i++]);
 	}
 
-//heapMonitor now is empty (It will allocate new memory for it if new heap variables are used):
-
 	heapMonitor.size = 0;
 	heapMonitor.using = 0;
 	heapMonitor.array = NULL;
+
 	free(heapMonitor.array);
 }
 
@@ -94,16 +91,9 @@ void freeHeap()  {
 
 void killHeapMonitor()	{
 
-//If heapMonitor is alive then kill it:
-
 	if(heapMonitor.alive == TRUE )	{
 
-	//Free all the variables:
-
 		freeHeap();
-
-	//Free the array field in heapMonitor. If .array = NULL nothing happens:
-		
 		free(heapMonitor.array);
 		heapMonitor.alive = FALSE;
 	}
