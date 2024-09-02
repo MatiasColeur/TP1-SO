@@ -14,6 +14,14 @@
 	#define FALSE !TRUE
 
 
+//WARNING! This library automatically manage heap memory. 
+
+//DO NOT free variables instantiated with theese functions, otherwise undifined behivouroccurs. 
+
+//Remember killing the monitor at the end of the program (see killHeapMonitor()).
+
+
+
 //safeMalloc(): Allocates @size bytes and returns a pointer to the allocated memory. The memory is not initialized. If size is 0, then safeMalloc() returns a unique pointer value that can later be successfully passed to free(). Handling all errors.
 
 	void * safeMalloc(size_t size);
