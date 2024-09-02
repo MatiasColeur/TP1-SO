@@ -30,8 +30,6 @@ int main(int argc, char * argv[])	{
 	int pid;
 
 	while((readReturn = read(STDIN_FILENO, buf+i, 1)) > 0)	{
-	
-		errorManagement(readReturn == -1, "Read failed");	
 
 		if(SEPARATOR == buf[i++])	{
 
@@ -63,6 +61,8 @@ int main(int argc, char * argv[])	{
 			freeHeap();
 		}
 	}
+
+	errorManagement(readReturn == -1, "Read failed");	
 
 	killHeapMonitor();
 	exit(EXIT_SUCCESS);
