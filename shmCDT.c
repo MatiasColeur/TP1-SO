@@ -7,15 +7,44 @@ struct sharedCDT {
 	int shm_fd;
 	void * mapped;
 	char * name;
+	size_t size;
 	sem_t * semaphore;
 
 }; 
 
+sharedADT createShm(char * name, size_t size) {
+	sharedADT shm = malloc(sizeof(struct sharedCDT));
+	if (shm == NULL) {
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
+	shm->size = size;
+	shm->name = name;
 
-//TO DO
-sharedADT newShared(void * content)	{
+	shm->shm_fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR);
+	if (shm->shm_fd == -1) {
+		perror("shm_open");
+		free(shm);
+		exit(EXIT_FAILURE);
+	}
 
-	return safeCalloc(1, sizeof(sharedADT[0]));
+	if (ftruncate(shm->shm_fd, shm->size) == -1) {
+		perror("ftruncate");
+		close(shm->shm_fd);
+		free(shm);
+		return NULL;
+	}
+
+	return shm;
+}
+
+sem_t * initSemaphore(char * sem_name) {
+	sem_t * sem = sem_open(sem_name, O_CREAT);
+	if (sem == SEM_FAILED) {
+		perror("sem_open");
+		return NULL;
+	}
+	return sem;
 }
 
 //TO do
@@ -24,12 +53,7 @@ void killShared(sharedADT shm)	{
 		return;
 	}
 	if (shm->mapped != NULL) {
-		struct stat st;
-		if (fstat(shm->shm_fd, &st) == -1) {
-			perror("fstat");
-			exit(EXIT_FAILURE);
-		}
-		unmap(shm, st.st_size);
+		unmap(shm);
 	}
 
 	if (shm->shm_fd != -1) {
@@ -42,10 +66,9 @@ void killShared(sharedADT shm)	{
 		if (sem_close(shm->semaphore) == -1) {
 			perror("sem_close");
 		}
-	}
-
-	if (sem_unlink(shm->name) == -1) {
-		perror("sem_unlink");
+		if (sem_unlink(shm->name) == -1) {
+			perror("sem_unlink");
+		}
 	}
 
 	if (shm->name != NULL) {
@@ -55,26 +78,17 @@ void killShared(sharedADT shm)	{
 	free(shm);
 }
 
-void mapToMemory(sharedADT shm, size_t len, int prot, int flags) {
+void mapToMemory(sharedADT shm) {
 
-	struct stat st;
-	if (fstat(shm->shm_fd, &st) == -1) {
-		perror("fstat");
-		close(shm->shm_fd);
-		exit(EXIT_FAILURE);
-	}
-	size_t filesize = st.st_size;
-
-	void * map = mmap(NULL, filesize, PROT_READ | PROT_WRITE, MAP_PRIVATE, shm->shm_fd, 0);
-	if (map == MAP_FAILED) {
+	shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0);
+	if (shm->mapped == MAP_FAILED) {
 		perror("mmap");
 		exit(EXIT_FAILURE);
 	}
-	shm->mapped = map;
 }
 
-void unmap(sharedADT shm, size_t length) {
-	if (munmap(shm->mapped, length) == -1) {
+void unmap(sharedADT shm) {
+	if (munmap(shm->mapped, shm->size) == -1) {
 		perror("munmap");
 		exit(EXIT_FAILURE);
 	} 

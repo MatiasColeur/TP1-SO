@@ -13,13 +13,15 @@
 	
 	typedef struct sharedCDT * sharedADT;
 
-	sharedADT newShared(void * content);
+	sharedADT createShm(char * name, size_t size);
 
 	void killShared(sharedADT shm);
 
-	void mapToMemory(sharedADT shm, size_t len, int prot, int flags);
+	void mapToMemory(sharedADT shm);
 
-	void unmap(sharedADT shm, size_t length);
+	sem_t * initSemaphore(char * sem_name);
+
+	void unmap(sharedADT shm);
 
 
 #endif
