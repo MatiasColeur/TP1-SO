@@ -54,13 +54,13 @@ static void newHeapVariable(void * new)	{
 }
 
 
-//removeFromHeapList():	Removes @p from @heapMonitor.array.
+//removeFromHeapList():	Removes @ptr from @heapMonitor.array.
 
-static void removeFromHeapList(void * p)	{
+static void removeFromHeapList(void * ptr)	{
 
 	for(int i=0; i<heapMonitor.using; ++i)	{
 
-		if(heapMonitor.array[i]==p)	{
+		if(heapMonitor.array[i]==ptr)	{
 
 			heapMonitor.array[i] = heapMonitor.array[heapMonitor.using-1];
 			heapMonitor.using--;
@@ -69,13 +69,17 @@ static void removeFromHeapList(void * p)	{
 
 }
 
-
+void freeHeapVariable(void * ptr) {
+	removeFromHeapList(ptr);
+	free(ptr);
+	return;
+}
 
 void freeHeap()  {
 
 	int i=0;      
 
-	while(i<heapMonitor.using)      {
+	while(i<heapMonitor.using)	{
 	
 		free(heapMonitor.array[i++]);
 	}
