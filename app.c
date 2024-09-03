@@ -1,6 +1,6 @@
 //aplication.c
 
-int mian()	{
+int main()	{
 
 	;
 }
