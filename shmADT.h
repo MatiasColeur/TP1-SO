@@ -13,7 +13,7 @@
 
 typedef struct sharedCDT * sharedADT;
 
-sharedADT createShm(char * name, size_t size, char * sem_name);
+sharedADT createShm(char * name, size_t size);
 
 void killShared(sharedADT shm);
 

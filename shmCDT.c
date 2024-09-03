@@ -12,39 +12,24 @@ struct sharedCDT {
 
 }; 
 
-static sem_t * initSemaphore(char * sem_name) {
+static void initSemaphore(sharedADT shm, char * sem_name) {
 	sem_t * sem = sem_open(sem_name, O_CREAT);
-		if (sem == SEM_FAILED) {
-			perror("sem_open");
-			return NULL;
-		}
-	return sem;
+	errorManagement(sem == SEM_FAILED, "sem_open");
+	shm->semaphore = sem;
 }
 
 static void mapToMemory(sharedADT shm) {
-	shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0);
-	if (shm->mapped == MAP_FAILED) {
-		perror("mmap");
-		exit(EXIT_FAILURE);
-	}
+	errorManagement((shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0)) == MAP_FAILED, "mmap failed");
 }
 
 
-sharedADT createShm(char * name, size_t size, char * sem_name) {
+sharedADT createShm(char * name, size_t size) {
 	sharedADT shm = safeMalloc(sizeof(struct sharedCDT));
-	if (shm == NULL) {
-		perror("malloc");
-		exit(EXIT_FAILURE);
-	}
 	shm->size = size;
 	shm->name = name;
 
-	shm->shm_fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0666);
-	if (shm->shm_fd == -1) {
-		perror("shm_open");
-		free(shm);
-		exit(EXIT_FAILURE);
-	}
+	errorManagement((shm->shm_fd = shm_open(name, O_CREAT | O_EXCL | O_RDWR, 0666)) == -1, "shm_open");
+	//errorManagement(ftruncate(shm->shm_fd, shm->size) == -1, "ftruncate");
 
 	if (ftruncate(shm->shm_fd, shm->size) == -1) {
 		perror("ftruncate");
@@ -53,17 +38,14 @@ sharedADT createShm(char * name, size_t size, char * sem_name) {
 		return NULL;
 	}
 
-	shm->semaphore = initSemaphore(sem_name);
-	shm->mapped = mapToMemory(shm);
+	initSemaphore(shm, name);
+	mapToMemory(shm);
 
 	return shm;
 }
 
 static void unmap(sharedADT shm) {
-	if (munmap(shm->mapped, shm->size) == -1) {
-		perror("munmap");
-		exit(EXIT_FAILURE);
-	}
+	errorManagement(munmap(shm->mapped, shm->size) == -1, "munmap");
 }
 
 
@@ -75,18 +57,11 @@ void killShared(sharedADT shm)	{
 	if (shm->mapped != NULL) {
 		unmap(shm);
 	}
-
-	if (close(shm->shm_fd) == -1) {
-		perror("close");
-	}
+	errorManagement(close(shm->shm_fd) == -1, "close");
 
 	if (shm->semaphore != NULL) {
-		if (sem_close(shm->semaphore) == -1) {
-			perror("sem_close");
-		}
-		if (sem_unlink(shm->name) == -1) {
-			perror("sem_unlink");
-		}
+		errorManagement(sem_close(shm->semaphore) == -1, "close");
+		errorManagement(sem_unlink(shm->name) == -1, "close");
 	}
 
 	if (shm->name != NULL) {
@@ -94,12 +69,13 @@ void killShared(sharedADT shm)	{
 	}
 
 	unmap(shm);
-	free(shm);
+
 }
 
 
 
-
-
-
-
+// int main() {
+// 	sharedADT shm = createShm("Lo que más te haga feliz en esta vida", 1024);
+// 	killShared(shm);
+// killHeapMonitor();
+// }
