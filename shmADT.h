@@ -3,25 +3,24 @@
 #ifndef SHM_ADT_H
 #define SHM_ADT_H
 	
-	#include "heap.h"
-	#include <stdlib.h>
-	#include <fcntl.h>
-	#include <sys/mman.h>
-	#include <unistd.h>
-	#include <semaphore.h>
-	#include <sys/stat.h>	
-	
-	typedef struct sharedCDT * sharedADT;
+#include "heap.h"
+#include <stdlib.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <semaphore.h>
+#include <sys/stat.h>	
 
-	sharedADT createShm(char * name, size_t size);
+typedef struct sharedCDT * sharedADT;
 
-	void killShared(sharedADT shm);
+sharedADT createShm(char * name, size_t size, char * sem_name);
 
-	void mapToMemory(sharedADT shm);
+void killShared(sharedADT shm);
 
-	sem_t * initSemaphore(char * sem_name);
 
-	void unmap(sharedADT shm);
+
+
+
 
 
 #endif

@@ -12,8 +12,26 @@ struct sharedCDT {
 
 }; 
 
-sharedADT createShm(char * name, size_t size) {
-	sharedADT shm = malloc(sizeof(struct sharedCDT));
+static sem_t * initSemaphore(char * sem_name) {
+	sem_t * sem = sem_open(sem_name, O_CREAT);
+		if (sem == SEM_FAILED) {
+			perror("sem_open");
+			return NULL;
+		}
+	return sem;
+}
+
+static void mapToMemory(sharedADT shm) {
+	shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0);
+	if (shm->mapped == MAP_FAILED) {
+		perror("mmap");
+		exit(EXIT_FAILURE);
+	}
+}
+
+
+sharedADT createShm(char * name, size_t size, char * sem_name) {
+	sharedADT shm = safeMalloc(sizeof(struct sharedCDT));
 	if (shm == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
@@ -35,17 +53,19 @@ sharedADT createShm(char * name, size_t size) {
 		return NULL;
 	}
 
+	shm->semaphore = initSemaphore(sem_name);
+	shm->mapped = mapToMemory(shm);
+
 	return shm;
 }
 
-sem_t * initSemaphore(char * sem_name) {
-	sem_t * sem = sem_open(sem_name, O_CREAT);
-	if (sem == SEM_FAILED) {
-		perror("sem_open");
-		return NULL;
+static void unmap(sharedADT shm) {
+	if (munmap(shm->mapped, shm->size) == -1) {
+		perror("munmap");
+		exit(EXIT_FAILURE);
 	}
-	return sem;
 }
+
 
 //TO do
 void killShared(sharedADT shm)	{
@@ -56,10 +76,8 @@ void killShared(sharedADT shm)	{
 		unmap(shm);
 	}
 
-	if (shm->shm_fd != -1) {
-		if (close(shm->shm_fd) == -1) {
-			perror("close");
-		}
+	if (close(shm->shm_fd) == -1) {
+		perror("close");
 	}
 
 	if (shm->semaphore != NULL) {
@@ -75,21 +93,13 @@ void killShared(sharedADT shm)	{
 		free(shm->name);
 	}
 
+	unmap(shm);
 	free(shm);
 }
 
-void mapToMemory(sharedADT shm) {
 
-	shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shm_fd, 0);
-	if (shm->mapped == MAP_FAILED) {
-		perror("mmap");
-		exit(EXIT_FAILURE);
-	}
-}
 
-void unmap(sharedADT shm) {
-	if (munmap(shm->mapped, shm->size) == -1) {
-		perror("munmap");
-		exit(EXIT_FAILURE);
-	} 
-}
+
+
+
+
