@@ -159,7 +159,7 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 	
 }
 
-
+/*
 int main() {
 
 	sharedADT shm = createShm("Lo que más te haga feliz en esta vida", 1024);
@@ -177,4 +177,4 @@ int main() {
 
  	killShm(shm);
 	killHeapMonitor();
-}
+} */
