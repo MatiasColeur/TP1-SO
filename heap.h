@@ -49,7 +49,11 @@
 	void freeHeap();
 
 
+//freeHeapVariable(): free an unique dynamic variable (@ptr) saved in an internal struct
 
+	void freeHeapVariable(void * ptr);
+
+	
 //killHeapMonitor(): Kills the montitor. This should be use at the end of the program. It also calls freeHeap() so all the heap variables will be free.
 
 	void killHeapMonitor();
