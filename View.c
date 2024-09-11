@@ -8,7 +8,7 @@
 int main(int argc, char * argv[])	{
 
 //Gets the buffer:
-
+/*
 	char * name;
 
 	if(argc != 1)	{
@@ -41,4 +41,5 @@ int main(int argc, char * argv[])	{
 	
 	killShm(shm);
 	killHeapMonitor();
+*/
 }
