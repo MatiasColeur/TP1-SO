@@ -2,13 +2,19 @@
 
 #include "shmADT.h"
 
+#define MUTEX_INITIAL 1                              
+#define SYNC_INITIAL 0
+
+#define down(x) (sem_wait(x))
+#define up(x) (sem_post(x))
+	
 struct sharedCDT {
 
 	int shmFd;
 	void * mapped;
 	char * shmName;
 	size_t size;
-	size_t using;
+	size_t index;
 	sem_t * mutex;	
 	sem_t * sync; 
 	char * mutexName;
@@ -21,9 +27,9 @@ struct sharedCDT {
 
 
 
-static sem_t * initSemaphore(const char * semName) {
+static sem_t * initSemaphore(const char * semName, size_t initial) {
 
-	sem_t * sem = sem_open(semName, O_CREAT, 0664, 1);
+	sem_t * sem = sem_open(semName, O_CREAT, 0664, initial);
 	errorManagement(sem == SEM_FAILED, "shared memory open failed");
 
 	return sem;
@@ -51,13 +57,12 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 	sharedADT shm = (sharedADT) safeMalloc(sizeof(struct sharedCDT));
 	
 	shm->size = size;
-	shm->using = 0;
+	shm->index = 0;
 
 	shm->shmName = (char *) safeCalloc(strlen(SHM_NAME) + strlen(name) + 1, sizeof(char));
 	shm->mutexName = (char *) safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
 	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
 
-	
 	strcat(shm->shmName, SHM_NAME);
 	strcat(shm->shmName, MUTEX_NAME);
 	strcat(shm->shmName, SYNC_NAME);
@@ -71,8 +76,8 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 
 static void createResources(sharedADT shm)	{
 	
-	shm->mutex = initSemaphore(shm->mutexName);
-	shm->sync = initSemaphore(shm->syncName);
+	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
 	openShmHandler(shm);
 	truncateFd(shm);
 	mapToMemory(shm);
@@ -80,8 +85,8 @@ static void createResources(sharedADT shm)	{
 
 static void openResources(sharedADT shm)	{
 	
-	shm->mutex = initSemaphore(shm->mutexName);
-	shm->sync = initSemaphore(shm->syncName);
+	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
 	openShmHandler(shm);
 
 	mapToMemory(shm);
@@ -186,59 +191,69 @@ void closeShm(sharedADT shm)	{
 //-----------------------Read/write----------------------
 
 
-/*
+
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
-	if(shm == NULL) return 0;
-	if(src == NULL) return 0;
+	if(shm == NULL || src == NULL)	{ 
+		
+		return 0;
+	}
 
-//fix:
-	if( (shm->size - shm->using) < size)	{	
-	
+	if( (shm->size - shm->index) < size)	{
+
+//Only the app process will write in the shm:
+
 		killShm(shm);
+
 		errorManagement( 1, "write shm failed");
 	}
 	
-	sem_wait(shm->semaphore);
+	down(shm->mutex);
 	
-		memcpy(shm->mapped + shm->using, src, size); 
+		memcpy(shm->mapped + shm->index, src, size); 
 
-	sem_post(shm->semaphore);
+	up(shm->mutex);
 
-	return shm->using += size;
+	up(shm->sync);
+	
+	return shm->index += size ; 
 }
 
 
 
 size_t readShm(sharedADT shm, void * target, size_t size)	{
 
-	if(shm == NULL) return 0;
-	if(target == NULL) return 0;
+	if(shm == NULL || target == NULL)	{ 
+		
+		return 0;
+	}
 
-//fix:
-	if(shm->using < size)	{
+//Only the view process will write in the shm:
+
+	if( (shm->size - shm->index) >= size )	{
 			
 		killShm(shm);
 		errorManagement(1, "read shm failed");
 	}
 
-	sem_wait(shm->semaphore);
+	down(shm->sync);
+
+	down(shm->mutex);
 	
 		memcpy(target, shm->mapped, size);
-		memcpy(shm->mapped, shm->mapped+size, shm->using-size);
 
-	sem_post(shm->semaphore);
+	up(shm->mutex);
 
-	return shm->using -= size;
+	return shm->index += size;
 	
 }
 
-*/
 
-/*
+
 int main() {
 
-	sharedADT shm = createShm("Lo que más te haga feliz en esta vida", 1024);
+	sharedADT shm = createShm("Lo que mas te haga feliz en esta vida", 1024);
+	sharedADT shm2 = createShm("Lo que mas te haga feliz en esta vida", 1024);	
 	
 	char * s = "Hola\n";
 	int dim = strlen(s)+1;
@@ -247,10 +262,11 @@ int main() {
 
 	char * t = safeMalloc(dim*sizeof(s[0]));
 
-	readShm(shm, t, dim*sizeof(s[0]));
+	readShm(shm2, t, dim*sizeof(s[0]));
 
 	printf(t);
 
- 	killShm(shm);
+	killShm(shm);
+	killShm(shm2);
 	killHeapMonitor();
-} */
+}
