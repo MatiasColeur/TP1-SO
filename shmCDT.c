@@ -253,7 +253,7 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 int main() {
 
 	sharedADT shm = createShm("Lo que mas te haga feliz en esta vida", 1024);
-	sharedADT shm2 = createShm("Lo que mas te haga feliz en esta vida", 1024);	
+	sharedADT shm2 = openShm("Lo que mas te haga feliz en esta vida", 1024);	
 	
 	char * s = "Hola\n";
 	int dim = strlen(s)+1;
