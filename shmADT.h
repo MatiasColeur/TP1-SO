@@ -12,6 +12,9 @@
 	#include <sys/stat.h>	
 	#include <string.h>
 
+	#define SHM_NAME "shm-"
+	#define MUTEX_NAME "semMutex-"
+	#define SYNC_NAME "semSync-"
 
 	typedef struct sharedCDT * sharedADT;
 
@@ -22,12 +25,22 @@
 
 
 
+
+	sharedADT openShm(const char * name, size_t size);
+
+
+
 //killShared(): Deletes an instance of a sharedADT type. It handles the dynamic memory and files in uses.
 
 	void killShm(sharedADT shm);
 
 
-	
+
+
+	void closeShm(sharedADT shm);	
+
+
+
 //writeShm(): Writes @src in the shared memory. It doesn't delete the previous information written in the shared memory. @size must fit in the remining space in the shared memory.
 
 //	@return the exact space avialiable in the shared memory. Is on the user translate this information to the data type @src is using.

@@ -69,11 +69,15 @@ static void removeFromHeapList(void * ptr)	{
 
 }
 
-void freeHeapVariable(void * ptr) {
+
+
+void freeHeapVariable(void * ptr)	{
+
 	removeFromHeapList(ptr);
 	free(ptr);
-	return;
 }
+
+
 
 void freeHeap()  {
 

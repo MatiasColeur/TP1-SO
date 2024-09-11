@@ -42,7 +42,7 @@ static void truncateFd(sharedADT shm)	{
 
 static void openShmHandler(sharedADT shm)	{
 
-	shm->shmFd = shm_open(shm->name, O_CREAT | O_EXCL | O_RDWR, 0666);	
+	shm->shmFd = shm_open(shm->shmName, O_CREAT | O_EXCL | O_RDWR, 0666);	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
 
@@ -58,18 +58,18 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
 
 	
-	strcat(shm->shmName, SHM_NAME),
-	strcat(shm->shmName, MUTEX_NAME),
-	strcat(shm->shmName, SYNC_NAME),
+	strcat(shm->shmName, SHM_NAME);
+	strcat(shm->shmName, MUTEX_NAME);
+	strcat(shm->shmName, SYNC_NAME);
 
-	strcat(shm->shmName, name),
-	strcat(shm->mutexName, name),
-	strcat(shm->syncName, name),
+	strcat(shm->shmName, name);
+	strcat(shm->mutexName, name);
+	strcat(shm->syncName, name);
 		
 	return shm;
 }
 
-static void createResources(SharedADT shm)	{
+static void createResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName);
 	shm->sync = initSemaphore(shm->syncName);
@@ -78,15 +78,16 @@ static void createResources(SharedADT shm)	{
 	mapToMemory(shm);
 }
 
-static void openResources(SharedADT shm)	{
+static void openResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName);
 	shm->sync = initSemaphore(shm->syncName);
 	openShmHandler(shm);
+
 	mapToMemory(shm);
 }
 
-static void unlinkPreviousUsage(SharedADT shm)	{
+static void unlinkResources(sharedADT shm)	{
 
 	shm_unlink(shm->shmName);
 	shm_unlink(shm->mutexName);
@@ -94,10 +95,11 @@ static void unlinkPreviousUsage(SharedADT shm)	{
 }
 
 
+
 sharedADT createShm(const char * name, size_t size) {
 
 	sharedADT shm = createBaseShm(name, size);
-	unlinkPreviousUsage(shm);	
+	unlinkResources(shm);	
 	createResources(shm);
 
 	return shm;
@@ -127,19 +129,25 @@ static void unmapFromMemory(sharedADT shm) {
 	}
 }
 
-static void killSemaphore(sharedADT shm)	{
+static void closeSemaphore(sem_t * sem)	{
 
-	if (shm->semaphore != NULL) {
+	if (sem != NULL) {
 
-		errorManagement(sem_close(shm->semaphore) == -1, "memory shared close failed");
-		errorManagement(sem_unlink(shm->name) == -1, "memory shared close failed");
+		errorManagement(sem_close(sem) == -1, "memory shared close failed");
 	}
 }
 
-static void closeShm(sharedADT shm)	{
+static void closeShmHandler(sharedADT shm)	{
 	
-	errorManagement(shm_unlink(shm->name) == -1, "memory shared close failed");
 	errorManagement(close(shm->shmFd) == -1, "shared memory close failed");
+}
+
+static void closeResources(sharedADT shm)	{
+
+	unmapFromMemory(shm);
+	closeSemaphore(shm->mutex);
+	closeSemaphore(shm->sync);
+	closeShmHandler(shm);
 }
 
 
@@ -151,11 +159,26 @@ void killShm(sharedADT shm)	{
 		return;
 	}
 
-	unmapFromMemory(shm);
-	closeShm(shm);
-	killSemaphore(shm);
+	unlinkResources(shm);	
 
-	//To free shm->name and shm, needs to add features to heap.c
+	closeShm(shm);
+}
+
+
+
+void closeShm(sharedADT shm)	{
+
+	if (shm == NULL)	{
+
+		return;
+	}
+
+	closeResources(shm);
+	
+	freeHeapVariable(shm->shmName);
+	freeHeapVariable(shm->syncName);
+	freeHeapVariable(shm->mutexName);
+	freeHeapVariable(shm);
 }
 
 
@@ -163,7 +186,7 @@ void killShm(sharedADT shm)	{
 //-----------------------Read/write----------------------
 
 
-
+/*
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
 	if(shm == NULL) return 0;
@@ -209,6 +232,8 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 	return shm->using -= size;
 	
 }
+
+*/
 
 /*
 int main() {
