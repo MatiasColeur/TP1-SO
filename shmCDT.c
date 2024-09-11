@@ -6,10 +6,13 @@ struct sharedCDT {
 
 	int shmFd;
 	void * mapped;
-	char * name;
+	char * shmName;
 	size_t size;
 	size_t using;
-	sem_t * semaphore;	
+	sem_t * mutex;	
+	sem_t * sync; 
+	char * mutexName;
+	char * syncName;
 }; 
 
 
