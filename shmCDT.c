@@ -46,6 +46,28 @@ static void openShm(sharedADT shm)	{
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
 
+static sharedADT createBaseShm(const char * name, size_t size)	{
+
+	sharedADT shm = (sharedADT) safeMalloc(sizeof(struct sharedCDT));
+	
+	shm->size = size;
+	shm->using = 0;
+
+	shm->shmName = (char *) safeCalloc(strlen(SHM_NAME) + strlen(name) + 1, sizeof(char));
+	shm->mutexName = (char *) safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
+	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
+
+	
+	strcat(shm->shmName, SHM_NAME),
+	strcat(shm->shmName, MUTEX_NAME),
+	strcat(shm->shmName, SYNC_NAME),
+
+	strcat(shm->shmName, name),
+	strcat(shm->mutexName, name),
+	strcat(shm->syncName, name),
+		
+	return shm;
+}
 
 
 sharedADT createShm(const char * name, size_t size) {
