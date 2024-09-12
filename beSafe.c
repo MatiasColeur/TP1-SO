@@ -67,3 +67,11 @@ int * safePipeD(void)	{
 	return pipefd;
 }
 
+
+
+void safeExecve(const char * path, const char * argv[],const char * envp[])	{
+
+	int returnValue= execve(path,argv,envp);
+	errorManagement(returnValue== -1, "Execve failed");
+
+}
