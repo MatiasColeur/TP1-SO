@@ -78,7 +78,7 @@
 
 //See execve() linux manual for more information about its parameters.
 
-	void safeExecve(const char * path, const char * argv[],const char * envp[]);
+	void safeExecve(char * path, char * argv[],char * envp[]);
 
 
 #endif
