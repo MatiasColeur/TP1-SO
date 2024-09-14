@@ -130,13 +130,6 @@ static void closePipes(slave_monitor * monitor)	{
 static void readFromSlaves(slave_monitor * monitor,char * buff){
 
 	fd_set read_fd;
-	FD_ZERO(&read_fd);
-
-	for(int i=0; i< monitor->total_slaves; i++){
-
-		FD_SET(monitor->pipe_fd_read[i],&read_fd);
-		
-	}
 
 	int fd_available;
 	int maxFD= getMaxFD(monitor->pipe_fd_read,monitor->total_slaves);
@@ -146,8 +139,16 @@ static void readFromSlaves(slave_monitor * monitor,char * buff){
     timeout.tv_usec = 0;
 
 	int files_shown=0;
-	while(files_shown < monitor->total_files){		
-		fd_available = select(maxFD+1,&read_fd,NULL,NULL,&timeout);	//TO DO: @MatiasColeur hacer safeSelect
+	while(files_shown < monitor->total_files){
+		FD_ZERO(&read_fd);
+
+		for(int i=0; i< monitor->total_slaves; i++){
+
+			FD_SET(monitor->pipe_fd_read[i],&read_fd);
+			
+		}
+
+		fd_available = select(maxFD+1,&read_fd,NULL,NULL,NULL);	//TO DO: @MatiasColeur hacer safeSelect
 
 
 		if(fd_available > 0){
@@ -156,10 +157,8 @@ static void readFromSlaves(slave_monitor * monitor,char * buff){
 				
 				
 				if(FD_ISSET(monitor->pipe_fd_read[i],&read_fd)){
-
 					read(monitor->pipe_fd_read[i],buff,1000);
-					printf("%s\n",buff);
-					//writeSlaveOutput(buff);
+					writeSlaveOutput(buff);
 
 					if(canAssign(monitor))	{
 
