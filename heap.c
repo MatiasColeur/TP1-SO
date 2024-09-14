@@ -54,13 +54,13 @@ static void newHeapVariable(void * new)	{
 }
 
 
-//removeFromHeapList():	Removes @ptr from @heapMonitor.array.
+//removeFromHeapList():	Removes @p from @heapMonitor.array.
 
-static void removeFromHeapList(void * ptr)	{
+static void removeFromHeapList(void * p)	{
 
 	for(int i=0; i<heapMonitor.using; ++i)	{
 
-		if(heapMonitor.array[i]==ptr)	{
+		if(heapMonitor.array[i]==p)	{
 
 			heapMonitor.array[i] = heapMonitor.array[heapMonitor.using-1];
 			heapMonitor.using--;
@@ -69,17 +69,13 @@ static void removeFromHeapList(void * ptr)	{
 
 }
 
-void freeHeapVariable(void * ptr) {
-	removeFromHeapList(ptr);
-	free(ptr);
-	return;
-}
+
 
 void freeHeap()  {
 
 	int i=0;      
 
-	while(i<heapMonitor.using)	{
+	while(i<heapMonitor.using)      {
 	
 		free(heapMonitor.array[i++]);
 	}
@@ -133,8 +129,21 @@ void * safeCalloc(size_t nmemb, size_t size)	{
 
 void * safeRealloc(void * ptr, size_t size)	{
 
-//Needed because realloc will free the old heap memory address so freeHeap() will try to free already free memory. Deleting the old memory address and adding the new one everyone is safe:
+//Needed because realloc will free the old heap memory address so freeHeap() will try to free already free memory. Deleting the old memory address and adding the neIw one everyone is safe:
 
 	removeFromHeapList(ptr);
 	return safeAlloc(realloc(ptr, size));
 }
+
+
+/*
+int main()	{
+
+	int* hi = (int *) safeMalloc(sizeof(int) * 5);
+	hi = (int *) safeCalloc(sizeof(int), 5);
+
+	hi = safeRealloc(hi, sizeof(int) * 5);
+
+	
+
+}*/
