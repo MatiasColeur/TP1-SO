@@ -46,7 +46,7 @@ int main(int argc, char * argv[])	{
 			
 			if(hash != NULL && name != NULL)	{
 			
-				dprintf(STDOUT_FILENO,"%s-%d-%s\n", name, pid, hash);
+				dprintf(STDOUT_FILENO,"%s-%d-%s", name, pid, hash);
 			}
 					
 		//Reset buffer:

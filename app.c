@@ -7,25 +7,29 @@
 
 
 #define SLAVES_AMOUNT 5
+#define FILES_PER_SLAVE 10
 #define CHILD_PATH "./slave"
 #define SLAVE_ARGV {CHILD_PATH,NULL}
 #define SLAVE_ENVP {NULL}
+#define SEPARATOR '\n'
 
 typedef struct 
 {
-	int pipe_fd_write[SLAVES_AMOUNT];		//File descriptors from pipes from each slave. Its seen from the perspective
-	int pipe_fd_read[SLAVES_AMOUNT];		// of the master (where master writes and reads)
-
-	pid_t slaves[SLAVES_AMOUNT];
+	int * pipe_fd_write;		//File descriptors from pipes from each slave. Its seen from the perspective
+	int * pipe_fd_read;		// of the master (where master writes and reads)
 
 	int total_slaves;
+
+	char ** files;
+	int total_files;
+	int file_idx;
 
 } slave_monitor;
 
 
 
 
-static slave_monitor * getSlaves(const int slaves_amount);
+static void getSlaves();
 
 static void closePipes(slave_monitor * monitor);
 
@@ -35,29 +39,39 @@ static int getMaxFD(int * fd_array, int fd_amount);
 
 static void readFromSlaves(slave_monitor * monitor,char * buff);
 
-static slave_monitor * startSlaveMonitor(const int files_amount);
+static slave_monitor * startSlaveMonitor(const int files_amount,char * files[]);
 
-static void assingToSlave(slave_monitor * monitor, int slave_position,char * file);
+static void assingToSlave(slave_monitor * monitor, int slave_position);
+
+static int canAssign(slave_monitor * monitor);
+
+static void writeSlaveOutput(char * str);
+
+
 
 int main(int argc, char * argv[])	{
 
-	slave_monitor * monitor= getSlaves(10);
+	int files_amount = argc - 1;
+
+	slave_monitor * monitor= startSlaveMonitor(files_amount,argv+1);
+
+	getSlaves(monitor);
 	char buff[1000];
+
 	readFromSlaves(monitor,buff);
 	closePipes(monitor);
 	return 0;
 }
 
-static slave_monitor * getSlaves(const int files_amount)	{
 
-	slave_monitor * monitor= (slave_monitor *) malloc(sizeof(slave_monitor));
-	monitor->total_slaves=SLAVES_AMOUNT;
+
+
+static void getSlaves(slave_monitor * monitor)	{
 
 	for(int i=0; i< monitor->total_slaves;i++)	{
 		getOneSlave(monitor,i);
 	}
 
-	return monitor;
 }
 
 
@@ -91,13 +105,14 @@ static void getOneSlave(slave_monitor * monitor,int slave_position)	{
 	}
 	else{										//App process
 		
-		monitor->slaves[slave_position]= pid;
 		close(pipe_read[1]);
 		close(pipe_write[0]);					//Close pipe filedescriptors that wont be used
 		
-		char * file= "files/prueba.txt\n";
-		// write(pipe_write[1],file,strlen(file));
-		assingToSlave(monitor, slave_position,file);
+		if(canAssign(monitor)){
+
+			assingToSlave(monitor, slave_position);
+
+		}
 
 	}
 }
@@ -126,14 +141,12 @@ static void readFromSlaves(slave_monitor * monitor,char * buff){
 	int fd_available;
 	int maxFD= getMaxFD(monitor->pipe_fd_read,monitor->total_slaves);
 
-	int condition=1;
-	
 	struct timeval timeout;  // Timeout for select
 	timeout.tv_sec = 2;
     timeout.tv_usec = 0;
 
-
-	while(condition){		
+	int files_shown=0;
+	while(files_shown < monitor->total_files){		
 		fd_available = select(maxFD+1,&read_fd,NULL,NULL,&timeout);	//TO DO: @MatiasColeur hacer safeSelect
 
 
@@ -143,14 +156,21 @@ static void readFromSlaves(slave_monitor * monitor,char * buff){
 				
 				
 				if(FD_ISSET(monitor->pipe_fd_read[i],&read_fd)){
+
 					read(monitor->pipe_fd_read[i],buff,1000);
+					printf("%s\n",buff);
+					//writeSlaveOutput(buff);
+
+					if(canAssign(monitor))	{
+
+						assingToSlave(monitor,i);
+
+					}
+					files_shown++;
 				}
 
 			}
 
-		}
-		else{
-			condition=0;
 		}
 	}
 }
@@ -171,16 +191,63 @@ static int getMaxFD(int * fd_array, int fd_amount)	{
 	return to_ret;
 }
 
-static slave_monitor * startSlaveMonitor(const int files_amount){
 
-	slave_monitor * monitor= (slave_monitor *) malloc(sizeof(slave_monitor));
-	monitor->total_slaves=SLAVES_AMOUNT;
+static slave_monitor * startSlaveMonitor(const int files_amount,char * files[]){
+	slave_monitor * monitor= (slave_monitor *) malloc(sizeof(slave_monitor));		//TO DO: @MatiasColeur hacer safeMalloc
 
+	if(files_amount > (SLAVES_AMOUNT * FILES_PER_SLAVE))	{
+		
+		monitor->total_slaves= files_amount / FILES_PER_SLAVE;
+
+	}
+	else if(files_amount< SLAVES_AMOUNT){
+		monitor->total_slaves= files_amount;
+	}
+	else{
+		monitor->total_slaves= SLAVES_AMOUNT;
+	}
+
+	monitor->pipe_fd_read = (int *) malloc(sizeof(int) * monitor->total_slaves);
+	monitor->pipe_fd_write = (int *) malloc(sizeof(int) * monitor->total_slaves);
+
+	monitor->total_files=files_amount;
+	monitor->files=files;
+	monitor->file_idx=0;
 	return monitor;
 }
 
-static void assingToSlave(slave_monitor * monitor, int slave_position,char * file)	{
 
-	write(monitor->pipe_fd_write[slave_position],file,strlen(file));
+static void assingToSlave(slave_monitor * monitor, int slave_position)	{
+
+	errorManagement(! canAssign(monitor), "All files already assigned");
+
+
+	char * file= monitor->files[monitor->file_idx];
+
+	int len= strlen(file);
+	
+
+	char * new_file= (char *) malloc(len+2);
+	strcpy(new_file,file);
+	new_file[len] = SEPARATOR;
+
+	new_file[len+1] = '\0';		
+
+
+	write(monitor->pipe_fd_write[slave_position],new_file,len+1);
+	// write(monitor->pipe_fd_write[slave_position],"files/prueba.txt\n",strlen("files/prueba.txt\n"));
+
+	monitor->file_idx+=1;
+
+}
+
+static int canAssign(slave_monitor * monitor)	{
+	return monitor->total_files > monitor->file_idx;
+}
+
+
+static void writeSlaveOutput(char * str)	{
+
+	printf("%s\n",str);
 
 }
