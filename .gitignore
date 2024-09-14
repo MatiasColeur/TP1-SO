@@ -1,0 +1,9 @@
+.*
+
+!.gitignore
+
+*.o
+
+*.out
+
+*.exe
