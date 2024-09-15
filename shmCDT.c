@@ -2,14 +2,23 @@
 
 #include "shmADT.h"
 
+#define MUTEX_INITIAL 1                              
+#define SYNC_INITIAL 0
+
+#define down(x) (sem_wait(x))
+#define up(x) (sem_post(x))
+	
 struct sharedCDT {
 
 	int shmFd;
 	void * mapped;
-	char * name;
+	char * shmName;
 	size_t size;
-	size_t using;
-	sem_t * semaphore;	
+	size_t index;
+	sem_t * mutex;	
+	sem_t * sync; 
+	char * mutexName;
+	char * syncName;
 }; 
 
 
@@ -18,12 +27,12 @@ struct sharedCDT {
 
 
 
-static void initSemaphore(sharedADT shm) {
+static sem_t * initSemaphore(const char * semName, size_t initial) {
 
-	sem_t * sem = sem_open(shm->name, O_CREAT, 0664, 1);
+	sem_t * sem = sem_open(semName, O_CREAT, 0664, initial);
 	errorManagement(sem == SEM_FAILED, "shared memory open failed");
 
-	shm->semaphore = sem;
+	return sem;
 }
 
 static void mapToMemory(sharedADT shm) {
@@ -37,27 +46,76 @@ static void truncateFd(sharedADT shm)	{
 	errorManagement(ftruncate(shm->shmFd, shm->size) == -1, "ftruncate failed");
 }
 
-static void openShm(sharedADT shm)	{
+static void openShmHandler(sharedADT shm)	{
 
-	shm->shmFd = shm_open(shm->name, O_CREAT | O_EXCL | O_RDWR, 0666);	
+	shm->shmFd = shm_open(shm->shmName, O_CREAT | O_EXCL | O_RDWR, 0666);	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
+}
+
+static sharedADT createBaseShm(const char * name, size_t size)	{
+
+	sharedADT shm = (sharedADT) safeMalloc(sizeof(struct sharedCDT));
+	
+	shm->size = size;
+	shm->index = 0;
+
+	shm->shmName = (char *) safeCalloc(strlen(SHM_NAME) + strlen(name) + 1, sizeof(char));
+	shm->mutexName = (char *) safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
+	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
+
+	strcat(shm->shmName, SHM_NAME);
+	strcat(shm->shmName, MUTEX_NAME);
+	strcat(shm->shmName, SYNC_NAME);
+
+	strcat(shm->shmName, name);
+	strcat(shm->mutexName, name);
+	strcat(shm->syncName, name);
+		
+	return shm;
+}
+
+static void createResources(sharedADT shm)	{
+	
+	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
+	openShmHandler(shm);
+	truncateFd(shm);
+	mapToMemory(shm);
+}
+
+static void openResources(sharedADT shm)	{
+	
+	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
+	openShmHandler(shm);
+
+	mapToMemory(shm);
+}
+
+static void unlinkResources(sharedADT shm)	{
+
+	shm_unlink(shm->shmName);
+	shm_unlink(shm->mutexName);
+	shm_unlink(shm->syncName);
 }
 
 
 
 sharedADT createShm(const char * name, size_t size) {
 
-	sharedADT shm = safeMalloc(sizeof(struct sharedCDT));
-	shm->size = size;
-	shm->using = 0;
-	
-	shm->name = safeCalloc(strlen(name)+1,sizeof(name[0]));
-	strcat(shm->name, name);
+	sharedADT shm = createBaseShm(name, size);
+	unlinkResources(shm);	
+	createResources(shm);
 
-	openShm(shm);
-	truncateFd(shm);
-	initSemaphore(shm);
-	mapToMemory(shm);
+	return shm;
+}
+
+
+
+sharedADT openShm(const char * name, size_t size)	{
+
+	sharedADT shm = createBaseShm(name, size);
+	openResources(shm);	
 
 	return shm;
 }
@@ -76,19 +134,25 @@ static void unmapFromMemory(sharedADT shm) {
 	}
 }
 
-static void killSemaphore(sharedADT shm)	{
+static void closeSemaphore(sem_t * sem)	{
 
-	if (shm->semaphore != NULL) {
+	if (sem != NULL) {
 
-		errorManagement(sem_close(shm->semaphore) == -1, "memory shared close failed");
-		errorManagement(sem_unlink(shm->name) == -1, "memory shared close failed");
+		errorManagement(sem_close(sem) == -1, "memory shared close failed");
 	}
 }
 
-static void closeShm(sharedADT shm)	{
+static void closeShmHandler(sharedADT shm)	{
 	
-	errorManagement(shm_unlink(shm->name) == -1, "memory shared close failed");
 	errorManagement(close(shm->shmFd) == -1, "shared memory close failed");
+}
+
+static void closeResources(sharedADT shm)	{
+
+	unmapFromMemory(shm);
+	closeSemaphore(shm->mutex);
+	closeSemaphore(shm->sync);
+	closeShmHandler(shm);
 }
 
 
@@ -100,11 +164,26 @@ void killShm(sharedADT shm)	{
 		return;
 	}
 
-	unmapFromMemory(shm);
-	closeShm(shm);
-	killSemaphore(shm);
+	unlinkResources(shm);	
 
-	//To free shm->name and shm, needs to add features to heap.c
+	closeShm(shm);
+}
+
+
+
+void closeShm(sharedADT shm)	{
+
+	if (shm == NULL)	{
+
+		return;
+	}
+
+	closeResources(shm);
+	
+	freeHeapVariable(shm->shmName);
+	freeHeapVariable(shm->syncName);
+	freeHeapVariable(shm->mutexName);
+	freeHeapVariable(shm);
 }
 
 
@@ -115,54 +194,66 @@ void killShm(sharedADT shm)	{
 
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
-	if(shm == NULL) return 0;
-	if(src == NULL) return 0;
+	if(shm == NULL || src == NULL)	{ 
+		
+		return 0;
+	}
 
-//fix:
-	if( (shm->size - shm->using) < size)	{	
-	
+	if( (shm->size - shm->index) < size)	{
+
+//Only the app process will write in the shm:
+
 		killShm(shm);
+
 		errorManagement( 1, "write shm failed");
 	}
 	
-	sem_wait(shm->semaphore);
+	down(shm->mutex);
 	
-		memcpy(shm->mapped + shm->using, src, size); 
+		memcpy(shm->mapped + shm->index, src, size); 
 
-	sem_post(shm->semaphore);
+	up(shm->mutex);
 
-	return shm->using += size;
+	up(shm->sync);
+	
+	return shm->index += size ; 
 }
 
 
 
 size_t readShm(sharedADT shm, void * target, size_t size)	{
 
-	if(shm == NULL) return 0;
-	if(target == NULL) return 0;
+	if(shm == NULL || target == NULL)	{ 
+		
+		return 0;
+	}
 
-//fix:
-	if(shm->using < size)	{
+//Only the view process will write in the shm:
+
+	if( (shm->size - shm->index) >= size )	{
 			
 		killShm(shm);
 		errorManagement(1, "read shm failed");
 	}
 
-	sem_wait(shm->semaphore);
+	down(shm->sync);
+
+	down(shm->mutex);
 	
 		memcpy(target, shm->mapped, size);
-		memcpy(shm->mapped, shm->mapped+size, shm->using-size);
 
-	sem_post(shm->semaphore);
+	up(shm->mutex);
 
-	return shm->using -= size;
+	return shm->index += size;
 	
 }
 
-/*
+
+
 int main() {
 
-	sharedADT shm = createShm("Lo que más te haga feliz en esta vida", 1024);
+	sharedADT shm = createShm("Lo que mas te haga feliz en esta vida", 1024);
+	sharedADT shm2 = openShm("Lo que mas te haga feliz en esta vida", 1024);	
 	
 	char * s = "Hola\n";
 	int dim = strlen(s)+1;
@@ -171,10 +262,11 @@ int main() {
 
 	char * t = safeMalloc(dim*sizeof(s[0]));
 
-	readShm(shm, t, dim*sizeof(s[0]));
+	readShm(shm2, t, dim*sizeof(s[0]));
 
 	printf(t);
 
- 	killShm(shm);
+	killShm(shm);
+	killShm(shm2);
 	killHeapMonitor();
-} */
+}
