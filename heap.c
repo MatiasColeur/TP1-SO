@@ -113,7 +113,7 @@ static void newHeapVariable(void * new)	{
 }
 
 
-//removeFromHeapList():	Removes @p from @heapMonitor.array.
+//removeFromHeapList():	Removes @p from @heapMonitor.array. No free is done.
 
 static void removeFromHeapList(void * p)	{
 
@@ -126,19 +126,6 @@ static void removeFromHeapList(void * p)	{
 		}
 	}
 
-}
-
-static void changeHeapMonitorDialog()	{
-
-	heapMonitor.dialogIndex = (heapMonitor.dialogIndex + 1) % heapMonitor.dialogAmount;
-}
-
-
-
-void whatsUpHeapMonitor()	{
-
-	printf(HEAP_MONITOR_DIALOG_FORMAT, heapMonitor.dialog[heapMonitor.dialogIndex]);
-	changeHeapMonitorDialog();
 }
 
 
@@ -163,6 +150,14 @@ void freeHeap()  {
 
 
 
+void freeHeapVariable(void * p) {
+	
+	removeFromHeapList(p);
+	free(p);
+}
+
+
+
 void killHeapMonitor()	{
 
 	if(isHeapMonitorDead())	return;
@@ -173,8 +168,7 @@ void killHeapMonitor()	{
 // Dialogs changes when it dies:
 
 	heapMonitor.dialog = (char **) deadHeapMonitorDialogs; 
-
-       	heapMonitor.dialogAmount = DEAD_HEAP_MONITOR_DIALOGS_AMOUNT;
+    heapMonitor.dialogAmount = DEAD_HEAP_MONITOR_DIALOGS_AMOUNT;
 	heapMonitor.dialogIndex = 0;
 }
 
@@ -209,7 +203,8 @@ void * safeCalloc(size_t nmemb, size_t size)	{
 
 void * safeRealloc(void * ptr, size_t size)	{
 
-//Needed because realloc will free the old heap memory address so freeHeap() will try to free already free memory. Deleting the old memory address and adding the neIw one everyone is safe:
+// Needed because realloc will free the old heap memory address so freeHeap() would try to free already free memory. 
+// Deleting the old memory address and adding the new one keeps everyone safe:
 
 	removeFromHeapList(ptr);
 	return safeAlloc(realloc(ptr, size));
@@ -217,37 +212,15 @@ void * safeRealloc(void * ptr, size_t size)	{
 
 
 
-int main()	{
+static void changeHeapMonitorDialog()	{
 
-	char * hi = (char *) safeMalloc(sizeof(char) * 5);
+	heapMonitor.dialogIndex = (heapMonitor.dialogIndex + 1) % heapMonitor.dialogAmount;
+}
 
-	*hi = 'H';
-	*(hi+1) = 'o';
-	*(hi+2) = 'l';
-	*(hi+3) = 'a'; 
-	*(hi+4) = '\0';
 
-	printf("%s\n", hi);
-	printf("%ld\n", sizeof(void*));
 
-//	hi = (char *) safeCalloc(sizeof(char), 5);
+void whatsUpHeapMonitor()	{
 
-//	hi = (char *) safeRealloc(hi, sizeof(char) * 5);
-
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-
-	killHeapMonitor();	
-
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
-	whatsUpHeapMonitor();
+	printf(HEAP_MONITOR_DIALOG_FORMAT, heapMonitor.dialog[heapMonitor.dialogIndex]);
+	changeHeapMonitorDialog();
 }
