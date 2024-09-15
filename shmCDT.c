@@ -45,7 +45,7 @@ static void truncateFd(sharedADT shm)	{
 
 	errorManagement(ftruncate(shm->shmFd, shm->size) == -1, "ftruncate failed");
 }
-
+//TODO @MaxiChiate: Agregar permisos como parametro, asi el app solo puede escribir y el view solo puede leer.
 static void openShmHandler(sharedADT shm)	{
 
 	shm->shmFd = shm_open(shm->shmName, O_CREAT | O_EXCL | O_RDWR, 0666);	
@@ -63,9 +63,9 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 	shm->mutexName = (char *) safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
 	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
 
-	strcat(shm->shmName, SHM_NAME);
-	strcat(shm->shmName, MUTEX_NAME);
-	strcat(shm->shmName, SYNC_NAME);
+	strcpy(shm->shmName, SHM_NAME);
+	strcpy(shm->mutexName, MUTEX_NAME);
+	strcpy(shm->syncName, SYNC_NAME);
 
 	strcat(shm->shmName, name);
 	strcat(shm->mutexName, name);
