@@ -73,4 +73,12 @@
 
 
 
+
+//safeExecve(): calls execve() wrapping the error management
+
+//See execve() linux manual for more information about its parameters.
+
+	void safeExecve(char * path, char * argv[],char * envp[]);
+
+
 #endif

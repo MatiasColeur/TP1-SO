@@ -42,12 +42,11 @@ int main(int argc, char * argv[])	{
         		name = getFileName(buf);
 
         		pid = (int) getpid();
-
 		//Everything is ok? (getpid() is always successful)
 			
 			if(hash != NULL && name != NULL)	{
 			
-				printf("%s-%d-%s\n", name, pid, hash);
+				dprintf(STDOUT_FILENO,"%s-%d-%s", name, pid, hash);
 			}
 					
 		//Reset buffer:

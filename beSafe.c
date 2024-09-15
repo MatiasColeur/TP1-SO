@@ -56,14 +56,23 @@ void safePipe(int pipefd[])	{
 	errorManagement(returnValue == -1, "Pipe failed");
 }
 
-
+// MODIFICAR ACORDARSE DE USAR HEAP
+// TO DO: @MatiasColeur 
 
 int * safePipeD(void)	{
 
-	int * pipefd = (int *) safeMalloc( 2*sizeof(int) );
+	int * pipefd = (int *) malloc( 2*sizeof(int) );
 
 	safePipe(pipefd);
 	
 	return pipefd;
 }
 
+
+
+void safeExecve(char * path, char * argv[],char * envp[])	{
+
+	int returnValue= execve(path,argv,envp);
+	errorManagement(returnValue== -1, "Execve failed");
+
+}
