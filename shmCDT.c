@@ -5,8 +5,17 @@
 #define MUTEX_INITIAL 1                              
 #define SYNC_INITIAL 0
 
-#define down(x) (sem_wait(x))
-#define up(x) (sem_post(x))
+
+static inline int isNull(const void * data)	{
+
+    return data == NULL;
+}
+
+static inline int notNull(const void * data)	{
+
+	return !isNull(data);
+}
+
 	
 struct sharedCDT {
 
@@ -128,7 +137,7 @@ sharedADT openShm(const char * name, size_t size)	{
 
 static void unmapFromMemory(sharedADT shm) {
 	
-	if (shm->mapped != NULL) {
+	if (notNull(shm->mapped)) {
 
 		errorManagement(munmap(shm->mapped, shm->size) == -1, "memory unmap failed");
 		shm->mapped = NULL;
@@ -137,7 +146,7 @@ static void unmapFromMemory(sharedADT shm) {
 
 static void closeSemaphore(sem_t * sem)	{
 
-	if (sem != NULL) {
+	if (notNull(sem)) {
 
 		errorManagement(sem_close(sem) == -1, "memory shared close failed");
 	}
@@ -160,7 +169,7 @@ static void closeResources(sharedADT shm)	{
 
 void killShm(sharedADT shm)	{
 
-	if (shm == NULL) {
+	if (isNull(shm)) {
 
 		return;
 	}
@@ -174,7 +183,7 @@ void killShm(sharedADT shm)	{
 
 void closeShm(sharedADT shm)	{
 
-	if (shm == NULL)	{
+	if (isNull(shm))	{
 
 		return;
 	}
@@ -192,20 +201,29 @@ void closeShm(sharedADT shm)	{
 //-----------------------Read/write----------------------
 
 
+#define down(x) (sem_wait(x))
+#define up(x) (sem_post(x))
+
+
+static inline int notEnoughSpaceInBuffer(sharedADT shm, size_t size) {
+    
+	return (shm->size - shm->index) < size;
+}
+
+
 
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
-	if(shm == NULL || src == NULL)	{ 
+	if(isNull(shm) || isNull(src))	{ 
 		
 		return 0;
 	}
 
-	if( (shm->size - shm->index) < size)	{
+	if(notEnoughSpaceInBuffer(shm, size))	{
 
 //Only the app process will write in the shm:
 
 		killShm(shm);
-
 		errorManagement( 1, "write shm failed");
 	}
 	
@@ -224,16 +242,16 @@ size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
 size_t readShm(sharedADT shm, void * target, size_t size)	{
 
-	if(shm == NULL || target == NULL)	{ 
+	if(isNull(shm) || isNull(target))	{ 
 		
 		return 0;
 	}
 
+	if(notEnoughSpaceInBuffer(shm, size))	{
+
 //Only the view process will write in the shm:
 
-	if( (shm->size - shm->index) >= size )	{
-			
-		killShm(shm);
+		closeShm(shm);
 		errorManagement(1, "read shm failed");
 	}
 
