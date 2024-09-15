@@ -102,15 +102,14 @@ static void newHeapVariable(void * new)	{
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
-		heapMonitor.array = realloc(heapMonitor.array, 
-			heapMonitor.size + BLOCK * sizeof(void*));
+		heapMonitor.array = realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
 
 		errorManagement(heapMonitor.array == NULL, "Memory allocated failed");	
 		
-		heapMonitor.size+= BLOCK;
+		heapMonitor.size += BLOCK;
 	}
 
-	heapMonitor.array[heapMonitor.using++] = (void *) new;
+	heapMonitor.array[heapMonitor.using++] = new;
 }
 
 
@@ -157,9 +156,9 @@ void freeHeap()  {
 
 	heapMonitor.size = 0;
 	heapMonitor.using = 0;
-	heapMonitor.array = NULL;
 
 	free(heapMonitor.array);
+	heapMonitor.array = NULL;
 }
 
 
@@ -190,7 +189,6 @@ static void * safeAlloc(void * ptr)	{
 	newHeapVariable(ptr);
 
 	return ptr;
-
 }
 
 
@@ -221,10 +219,20 @@ void * safeRealloc(void * ptr, size_t size)	{
 
 int main()	{
 
-	int* hi = (int *) safeMalloc(sizeof(int) * 5);
-	hi = (int *) safeCalloc(sizeof(int), 5);
+	char * hi = (char *) safeMalloc(sizeof(char) * 5);
 
-	hi = safeRealloc(hi, sizeof(int) * 5);
+	*hi = 'H';
+	*(hi+1) = 'o';
+	*(hi+2) = 'l';
+	*(hi+3) = 'a'; 
+	*(hi+4) = '\0';
+
+	printf("%s\n", hi);
+	printf("%ld\n", sizeof(void*));
+
+//	hi = (char *) safeCalloc(sizeof(char), 5);
+
+//	hi = (char *) safeRealloc(hi, sizeof(char) * 5);
 
 	whatsUpHeapMonitor();
 	whatsUpHeapMonitor();
