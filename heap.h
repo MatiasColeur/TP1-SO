@@ -58,4 +58,12 @@
 
 	void killHeapMonitor();
 
+
+
+//whatsUpHeapMonitor(): Prints how does heapMonitor feels today.
+
+	void whatsUpHeapMonitor();
+
+
+
 #endif
