@@ -28,7 +28,7 @@
 
 
 
-//safeCalloc():  allocates memory for an array of @nmemb elements of @size bytes each and returns a pointer to the allocated memory. The memory is set to zero. If @nmemb or @size is 0, then safeCalloc() returns a unique pointer value that can later be successfully passed to free(). Handling errors.
+//safeCalloc():  Allocates memory for an array of @nmemb elements of @size bytes each and returns a pointer to the allocated memory. The memory is set to zero. If @nmemb or @size is 0, then safeCalloc() returns a unique pointer value that can later be successfully passed to free(). Handling errors.
 
 	void * safeCalloc(size_t nmemb, size_t size);
 
@@ -49,11 +49,13 @@
 	void freeHeap();
 
 
+
 //freeHeapVariable(): free an unique dynamic variable @p saved in an internal struct.
 
 	void freeHeapVariable(void * p);
 
-	
+
+
 //killHeapMonitor(): Kills the montitor. This should be use at the end of the program. It also calls freeHeap() so all the heap variables will be free.
 
 	void killHeapMonitor();
