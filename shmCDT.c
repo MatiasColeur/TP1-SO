@@ -1,10 +1,22 @@
 //shmCDT.c
 
+// TO DO @MaxiChiate: Add static functions to beSafe.h, for safety. 
+
+
 #include "shmADT.h"
 
 #define MUTEX_INITIAL 1                              
 #define SYNC_INITIAL 0
 
+//Since both sem and shm have flags to control read and write permissions, 
+// we can afford to enable all permissions for the file itself:
+
+#define PERMISSIONS_SETTINGS 0666 
+
+#define READ_OFLAGS O_RDONLY
+#define WRITE_OFLAGS O_WRONLY
+
+#define MEMORY_OFFSET 0
 
 static inline int isNull(const void * data)	{
 
@@ -38,28 +50,32 @@ struct sharedCDT {
 
 static sem_t * initSemaphore(const char * semName, size_t initial) {
 
-	sem_t * sem = sem_open(semName, O_CREAT, 0664, initial);
+	sem_t * sem = sem_open(semName, O_CREAT, PERMISSIONS_SETTINGS, initial);
 	errorManagement(sem == SEM_FAILED, "shared memory open failed");
 
 	return sem;
 }
 
+
 static void mapToMemory(sharedADT shm) {
 
-	errorManagement((shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shmFd, 0)) == MAP_FAILED, 
+	errorManagement((shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shmFd, MEMORY_OFFSET)) == MAP_FAILED, 
 		"memory map failed");
 }
+
 
 static void truncateFd(sharedADT shm)	{
 
 	errorManagement(ftruncate(shm->shmFd, shm->size) == -1, "ftruncate failed");
 }
-//TODO @MaxiChiate: Agregar permisos como parametro, asi el app solo puede escribir y el view solo puede leer.
-static void openShmHandler(sharedADT shm)	{
 
-	shm->shmFd = shm_open(shm->shmName, O_CREAT | O_EXCL | O_RDWR, 0666);	
+
+static void openShmHandler(sharedADT shm, int permissionsFlags)	{
+
+	shm->shmFd = shm_open(shm->shmName, O_CREAT | permissionsFlags, PERMISSIONS_SETTINGS); 	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
+
 
 static sharedADT createBaseShm(const char * name, size_t size)	{
 
@@ -83,23 +99,26 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 	return shm;
 }
 
+
 static void createResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
 	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
-	openShmHandler(shm);
+	openShmHandler(shm, WRITE_OFLAGS);
 	truncateFd(shm);
 	mapToMemory(shm);
 }
+
 
 static void openResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
 	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
-	openShmHandler(shm);
+	openShmHandler(shm, READ_OFLAGS);
 
 	mapToMemory(shm);
 }
+
 
 static void unlinkResources(sharedADT shm)	{
 
