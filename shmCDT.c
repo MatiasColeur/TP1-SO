@@ -23,7 +23,7 @@
 #define MEMORY_OFFSET 0
 
 #define MMAP_READ_OFLAGS PROT_READ
-#define MMAP_WRITE_OFLAGS PROT_READ | PROT_WRITE
+#define MMAP_WRITE_OFLAGS PROT_READ | PROT_WRITE // To do @MaxiChiate: Check if prot_read is necessary here.
 
 static inline int isNull(const void * data)	{
 
