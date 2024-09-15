@@ -13,10 +13,17 @@
 
 #define PERMISSIONS_SETTINGS 0666 
 
-#define READ_OFLAGS O_RDONLY
-#define WRITE_OFLAGS O_WRONLY
+// open_shm:
+
+#define OPEN_READ_OFLAGS O_RDONLY
+#define OPEN_WRITE_OFLAGS O_CREAT | O_WRONLY
+
+// mmap:
 
 #define MEMORY_OFFSET 0
+
+#define MMAP_READ_OFLAGS PROT_READ
+#define MMAP_WRITE_OFLAGS PROT_READ | PROT_WRITE
 
 static inline int isNull(const void * data)	{
 
@@ -57,9 +64,9 @@ static sem_t * initSemaphore(const char * semName, size_t initial) {
 }
 
 
-static void mapToMemory(sharedADT shm) {
+static void mapToMemory(sharedADT shm, int oflags ) {
 
-	errorManagement((shm->mapped = mmap(NULL, shm->size, PROT_READ | PROT_WRITE, MAP_SHARED, shm->shmFd, MEMORY_OFFSET)) == MAP_FAILED, 
+	errorManagement((shm->mapped = mmap(NULL, shm->size, oflags, MAP_SHARED, shm->shmFd, MEMORY_OFFSET)) == MAP_FAILED, 
 		"memory map failed");
 }
 
@@ -70,9 +77,9 @@ static void truncateFd(sharedADT shm)	{
 }
 
 
-static void openShmHandler(sharedADT shm, int permissionsFlags)	{
+static void openShmHandler(sharedADT shm, int oflags)	{
 
-	shm->shmFd = shm_open(shm->shmName, O_CREAT | permissionsFlags, PERMISSIONS_SETTINGS); 	
+	shm->shmFd = shm_open(shm->shmName, oflags, PERMISSIONS_SETTINGS); 	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
 
@@ -104,9 +111,9 @@ static void createResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
 	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
-	openShmHandler(shm, WRITE_OFLAGS);
+	openShmHandler(shm, OPEN_WRITE_OFLAGS);
 	truncateFd(shm);
-	mapToMemory(shm);
+	mapToMemory(shm, MMAP_WRITE_OFLAGS);
 }
 
 
@@ -114,9 +121,9 @@ static void openResources(sharedADT shm)	{
 	
 	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
 	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
-	openShmHandler(shm, READ_OFLAGS);
+	openShmHandler(shm, OPEN_READ_OFLAGS);
 
-	mapToMemory(shm);
+	mapToMemory(shm, MMAP_READ_OFLAGS);
 }
 
 
