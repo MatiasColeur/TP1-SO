@@ -131,6 +131,7 @@ static void unmapFromMemory(sharedADT shm) {
 	if (shm->mapped != NULL) {
 
 		errorManagement(munmap(shm->mapped, shm->size) == -1, "memory unmap failed");
+		shm->mapped = NULL;
 	}
 }
 
