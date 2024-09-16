@@ -17,14 +17,14 @@
 
 // sem_open:
 
-#define SEM_MODE S_IRWXU | S_IRWXG | S_IRWXO // 00777
+#define SEM_MODE 00777//S_IRWXU | S_IRWXG | S_IRWXO // 00777
 
 
 // shm_open:
 
-#define OPEN_MODE 00444//S_IWUSR | S_IRGRP | S_IROTH // 00244
+#define OPEN_MODE 00777 // S_IWUSR | S_IRGRP | S_IROTH // 00244
 
-#define OPEN_READ_OFLAGS  O_RDONLY
+#define OPEN_READ_OFLAGS  O_CREAT | O_RDWR //O_CREAT | O_RDONLY
 #define OPEN_WRITE_OFLAGS O_CREAT | O_RDWR // Must be O_RDWR, otherwise mmap() will throw EACCES error. See mmap() man for more info.
 
 // mmap:
@@ -33,8 +33,8 @@
 
 #define MMAP_FLAGS MAP_SHARED
 
-#define MMAP_READ_OFLAGS PROT_READ
-#define MMAP_WRITE_OFLAGS PROT_WRITE
+#define MMAP_READ_OFLAGS PROT_READ | PROT_WRITE//PROT_READ 
+#define MMAP_WRITE_OFLAGS PROT_READ | PROT_WRITE//PROT_WRITE
 
 	
 struct sharedCDT {
@@ -81,6 +81,7 @@ static void truncateFd(sharedADT shm)	{
 static void openShmHandler(sharedADT shm, int oflags)	{
 
 	shm->shmFd = shm_open(shm->shmName, oflags, OPEN_MODE); 	
+	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
 
@@ -119,10 +120,10 @@ static void createResources(sharedADT shm)	{
 
 
 static void openResources(sharedADT shm)	{
-	
+
 	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
 	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
-	openShmHandler(shm, OPEN_READ_OFLAGS);
+	openShmHandler(shm, OPEN_READ_OFLAGS);	
 
 	mapToMemory(shm, MMAP_READ_OFLAGS);
 }
