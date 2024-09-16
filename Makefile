@@ -5,7 +5,7 @@ CC = gcc
 CFLAGS = -Wall -v -O2
 
 # Source files
-SRCS_APP = app.c shmCDT.c heap.c beSafe.c
+SRCS_APP = app.c slaveMonitorCDT.c shmCDT.c heap.c beSafe.c
 SRCS_SLAVE = slave.c heap.c beSafe.c
 SRCS_VIEW = View.c shmCDT.c heap.c beSafe.c
 
