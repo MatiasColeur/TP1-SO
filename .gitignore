@@ -8,6 +8,14 @@
 
 *.exe
 
+*.txt
+
+#Binary files:
+
+view
+slave
+app
+
 files/
 
 strace_out

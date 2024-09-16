@@ -31,7 +31,7 @@ static const char *heapMonitorDialogs[] = {
     	"Running smooth like a freshly malloc'd block.",
     	"No need for a core dump today. All good!",
     	"Everything's in order. No dangling pointers here.",
-	"HeapMonitor here: The stack's stable, I'm stable... life is good."
+		"HeapMonitor here: The stack's stable, I'm stable... life is good."
 
 };
 
@@ -43,7 +43,7 @@ static const char *deadHeapMonitorDialogs[] = {
     	"You try to malloc... but only silence remains.",
     	"The heapMonitor stares blankly into the void... all memory is lost.",
     	"You call realloc, but the heapMonitor does not respond.",
-   	"...",
+   		"...",
     	"A faint whisper echoes... 'Segmentation fault...'",
     	"You feel a deep void... the heapMonitor has moved on to the great garbage collector in the sky.",
     	"...",
