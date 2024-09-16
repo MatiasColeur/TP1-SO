@@ -82,7 +82,11 @@ char * getHash(const char * path)	{
         char * buffer = safeCalloc(HASH_LENGTH+1, sizeof(char));
 	
 	char * input = getHashInput(path);
-	NullRetNull(input);
+	
+	if(isNull(input))	{
+
+		return NULL;
+	}
 
         FILE * file = popen(input, TYPE);
 	errorManagement(file == NULL, "popen failed");
