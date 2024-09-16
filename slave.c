@@ -14,12 +14,11 @@
 #define TYPE "r"		// Read file.
 #define SEPARATOR '\n'		// Char for differentiate paths.
 
-#define NullRetNull(x) if((x) == NULL) return NULL
-
 
 char * getHash(const char * path);
 char * getHashInput(const char * path);
 char * getFileName(const char * path);
+
 
 int main(int argc, char * argv[])	{
 
@@ -42,12 +41,13 @@ int main(int argc, char * argv[])	{
 
 			hash = getHash(buf);
 
-        		name = getFileName(buf);
+        	name = getFileName(buf);
 
-        		pid = (int) getpid();
+        	pid = (int) getpid();
+
 		//Everything is ok? (getpid() is always successful)
 			
-			if(hash != NULL && name != NULL)	{
+			if(notNull(hash) && notNull(name))	{
 			
 				dprintf(STDOUT_FILENO,"%s-%d-%s", name, pid, hash);
 			}
@@ -74,7 +74,10 @@ int main(int argc, char * argv[])	{
 
 char * getHash(const char * path)	{
 
-	NullRetNull(path);
+	if(isNull(path))	{
+
+		return NULL;
+	}
 
         char * buffer = safeCalloc(HASH_LENGTH+1, sizeof(char));
 	
@@ -97,7 +100,10 @@ char * getHash(const char * path)	{
 
 char * getHashInput(const char * path)	{
 
-	NullRetNull(path);
+	if(isNull(path))	{
+
+		return NULL;
+	}
 
 	char * input = safeCalloc(1+strlen(COMMAND)+strlen(path), sizeof(char));
 	
@@ -113,24 +119,27 @@ char * getHashInput(const char * path)	{
 
 char * getFileName(const char * path)	{
 
-	NullRetNull(path);	
+	if(isNull(path))	{
+
+		return NULL;
+	}
 
 //Find the '/' (useful when @path is an absolute path):
 
-        int i=0; while(path[i++]!=0);
-        int j=--i; 
+    int i=0; while(path[i++]!=0);
+    int j=--i; 
 	while(path[j]!='/' &&  j!=0)	{
 
 			j--;
 	}
 
-        char * fileName = safeCalloc(i-j, 1);
+    char * fileName = safeCalloc(i-j, 1);
 
-        int k=0;
-        while(path[j]!=0)       {
+    int k=0;
+    while(path[j]!=0)       {
 
-                fileName[k++] = path[j++];
-        }
+            fileName[k++] = path[j++];
+    }
 		
 	return fileName;
 }

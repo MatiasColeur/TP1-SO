@@ -10,7 +10,17 @@
 	#include <sys/wait.h>
 	#include "heap.h"
 
+	#define FALSE 0
+	#define TRUE !FALSE
+
+
 //WARNING! This library includes and uses the heap.h library; for heap memory variables, use only heap.h functions.
+
+
+
+//-----------------------Errors--------------------------------------------------->>
+
+
 
 //errorManagement(): checks if @condition is true (non-zero) and handlethe error redirecting @errorMessage to stderr exiting with errno value.
 
@@ -20,6 +30,10 @@
 //	Call example: errorManagement(fork() == -1, "Fork failed"); //When calling fork(), -1 is returned if there is an error.
 
 	void errorManagement(int condition, const char * errorMessage);
+
+
+
+//-----------------------Process--------------------------------------------------->>
 
 
 
@@ -73,12 +87,30 @@
 
 
 
-
 //safeExecve(): calls execve() wrapping the error management
 
 //See execve() linux manual for more information about its parameters.
 
 	void safeExecve(char * path, char * argv[],char * envp[]);
+
+
+
+//-----------------------General--------------------------------------------------->>
+
+
+
+static inline int isNull(const void * data)	{
+
+    return data == NULL;
+}
+
+
+
+static inline int notNull(const void * data)	{
+
+	return !isNull(data);
+}
+
 
 
 #endif

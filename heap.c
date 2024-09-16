@@ -33,7 +33,6 @@ static const char *heapMonitorDialogs[] = {
     	"Everything's in order. No dangling pointers here.",
 	"HeapMonitor here: The stack's stable, I'm stable... life is good."
 
-	//Dialogs made by chatGPT
 };
 
 #define HEAP_MONITOR_DIALOGS_AMOUNT 15
@@ -52,7 +51,6 @@ static const char *deadHeapMonitorDialogs[] = {
     	"HeapMonitor has stopped responding... forever.",
     	"Your request for memory allocation returns... NULL."
 
-	//Dialogs made by chatGPT
 };
 
 #define DEAD_HEAP_MONITOR_DIALOGS_AMOUNT 11
@@ -108,7 +106,7 @@ static void newHeapVariable(void * new)	{
 		
 		void ** reallocReturn = (void **) realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
 
-		errorManagement(reallocReturn == NULL, "Memory allocated failed");	
+		errorManagement(isNull(reallocReturn), "Memory allocated failed");	
 
 		heapMonitor.array = (void **) reallocReturn;
 		
@@ -184,7 +182,7 @@ static void * safeAlloc(void * ptr)	{
 
 	if(isHeapMonitorDead())	return NULL;
 
-	errorManagement(ptr == NULL, "Memory allocated failed");
+	errorManagement(isNull(ptr), "Memory allocated failed");
 
 	newHeapVariable(ptr);
 

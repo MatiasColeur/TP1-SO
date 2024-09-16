@@ -14,11 +14,17 @@
 //Since both sem and shm have flags to control read and write permissions, 
 // we can afford to enable all permissions for the file itself:
 
-#define PERMISSIONS_SETTINGS 0666 
 
-// open_shm:
+// sem_open:
 
-#define OPEN_READ_OFLAGS O_RDONLY
+#define SEM_MODE S_IRWXU | S_IRWXG | S_IRWXO // 00777
+
+
+// shm_open:
+
+#define OPEN_MODE S_IWUSR | S_IRGRP | S_IROTH // 00244
+
+#define OPEN_READ_OFLAGS  O_RDONLY
 #define OPEN_WRITE_OFLAGS O_CREAT | O_RDWR // Must be O_RDWR, otherwise mmap() will throw EACCES error. See mmap() man for more info.
 
 // mmap:
@@ -29,16 +35,6 @@
 
 #define MMAP_READ_OFLAGS PROT_READ
 #define MMAP_WRITE_OFLAGS PROT_WRITE
-
-static inline int isNull(const void * data)	{
-
-    return data == NULL;
-}
-
-static inline int notNull(const void * data)	{
-
-	return !isNull(data);
-}
 
 	
 struct sharedCDT {
@@ -62,7 +58,7 @@ struct sharedCDT {
 
 static sem_t * initSemaphore(const char * semName, size_t initial) {
 
-	sem_t * sem = sem_open(semName, O_CREAT, PERMISSIONS_SETTINGS, initial);
+	sem_t * sem = sem_open(semName, O_CREAT, SEM_MODE, initial);
 	errorManagement(sem == SEM_FAILED, "shared memory open failed");
 
 	return sem;
@@ -84,7 +80,7 @@ static void truncateFd(sharedADT shm)	{
 
 static void openShmHandler(sharedADT shm, int oflags)	{
 
-	shm->shmFd = shm_open(shm->shmName, oflags, PERMISSIONS_SETTINGS); 	
+	shm->shmFd = shm_open(shm->shmName, oflags, OPEN_MODE); 	
 	errorManagement( shm->shmFd == -1, "shared memory open failed");
 }
 

@@ -4,6 +4,7 @@
 #define SHM_ADT_H
 	
 	#include "heap.h"
+	#include "beSafe.h"
 	#include <stdlib.h>
 	#include <fcntl.h>
 	#include <sys/mman.h>
@@ -12,9 +13,10 @@
 	#include <sys/stat.h>	
 	#include <string.h>
 
-	#define SHM_NAME "shm-"
-	#define MUTEX_NAME "semMutex-"
-	#define SYNC_NAME "semSync-"
+	#define SHM_NAME "/shm-"
+	#define MUTEX_NAME "/semMutex-"
+	#define SYNC_NAME "/semSync-"
+
 
 	typedef struct sharedCDT * sharedADT;
 

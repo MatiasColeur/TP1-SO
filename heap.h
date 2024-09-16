@@ -10,13 +10,11 @@
 	#include <sys/wait.h>
 	#include "beSafe.h"
 	
-	#define TRUE 1
-	#define FALSE !TRUE
 
 
 //WARNING! This library automatically manage heap memory. 
 
-//DO NOT free variables instantiated with theese functions, otherwise undifined behivouroccurs. 
+//DO NOT free variables instantiated with theese functions, otherwise undifined behivour occurs. 
 
 //Remember killing the monitor at the end of the program (see killHeapMonitor()).
 
