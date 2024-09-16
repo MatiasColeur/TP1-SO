@@ -12,7 +12,7 @@
 int main(int argc, char * argv[])	{
 
 	sharedADT shm = createShm(SHBUFFER_NAME, SHBUFFER_SIZE);
-	dprintf(STDOUT_FILENO, SHBUFFER_NAME);
+	dprintf(STDOUT_FILENO,"%s", SHBUFFER_NAME);
 
 	wait4otherProcess();
 
