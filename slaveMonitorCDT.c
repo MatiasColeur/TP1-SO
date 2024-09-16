@@ -99,7 +99,7 @@ void closePipes(slaveMonitorADT monitor)	{
 
 void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 	
-	char buff[1000]; //TODO: Sacar magic number
+	char buff[100]; //TODO: Sacar magic number
 
 	fd_set read_fd;
 
@@ -124,6 +124,8 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 			for(int i=0; i < monitor->total_slaves; i++) {
 				
 				if(FD_ISSET(monitor->pipe_fd_read[i], &read_fd)) {
+					
+					memset(buff, 0, sizeof(buff));
 
 					read(monitor->pipe_fd_read[i], buff, 1000);
 					writeSlaveOutput(buff, shm);	//passing the shared memory as argument
