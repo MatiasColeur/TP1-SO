@@ -16,7 +16,7 @@
 #define SLAVE_ENVP {NULL}
 #define SEPARATOR '\n'
 
-#define SHBUFFER_NAME "TP1 SO 2Q 2024\nGrupo 3\nChiatellino Maximo - 63477 mchiatellino@itba.edu.ar\nColeur Matias -  @itba.edu.ar\nCuri Martinez Gonzalo -  @itba.edu.ar\n"
+#define SHBUFFER_NAME "TP1 SO 2Q 2024\nGrupo 3\nChiatellino Maximo - 63477 mchiatellino@itba.edu.ar\nColeur Matias - 63461 mcoleur@itba.edu.ar\nCuri Martinez Gonzalo - 63463 gcurimartinez@itba.edu.ar\n"
 #define SHBUFFER_SIZE 1024
 
 typedef struct 
