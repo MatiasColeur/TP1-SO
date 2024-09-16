@@ -26,7 +26,7 @@ static void writeSlaveOutput(char * str, sharedADT shm)   {
 
 	writeShm(shm, str, len);
 
-	int outputFd = open(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666); //TODO: safeopen.
+	int outputFd = safeOpen(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666); //TODO: safeopen.
 	write(outputFd, str, len);
 
 	close(outputFd);	//TODO: safeclose
@@ -114,7 +114,7 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 			FD_SET(monitor->pipe_fd_read[i], &read_fd);
 		}
 
-		fd_available = select(maxFD+1, &read_fd, NULL, NULL, NULL);	//TO DO: @MatiasColeur hacer safeSelect
+		fd_available = select(maxFD+1, &read_fd, NULL, NULL, NULL);	
 
 		if(fd_available > 0)    {
 			

@@ -103,6 +103,14 @@
 
 
 
+//safeOpen: calls open() wrapping the error management and returns the file descriptor
+
+//See open() linux manual for more information about its parameters and functionality
+
+	int safeOpen(char * path, int flags, mode_t mode);
+
+
+
 //-----------------------General--------------------------------------------------->>
 
 
