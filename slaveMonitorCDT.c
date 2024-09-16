@@ -17,6 +17,7 @@ struct slaveMonitorCDT  {
 	char ** files;
 	int total_files;
 	int file_idx;
+	int start_files;
 
 };
 
@@ -28,7 +29,8 @@ static void writeSlaveOutput(char * str, sharedADT shm)   {
 	writeShm(shm, str, len);
 
 	int outputFd = safeOpen(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666);
-	write(outputFd, str, len);
+	//write(outputFd, str, len);
+	dprintf(outputFd,"%s",str);
 
 	safeClose(outputFd);
 }
@@ -78,7 +80,7 @@ void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
 
 		if(canAssign(monitor))  {
 
-			assingToSlave(monitor, slave_position);
+			assingToSlave(monitor, slave_position,monitor->start_files);
 		}
 	}
 }
@@ -128,8 +130,9 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 
 					if(canAssign(monitor))  {
 
-						assingToSlave(monitor, i);
-                			}
+						assingToSlave(monitor, i,1);
+                	
+					}
 
 					files_shown++;
 				}
@@ -161,17 +164,20 @@ slaveMonitorADT startSlaveMonitor(const int files_amount, char * files[])    {
 
 	slaveMonitorADT monitor = (slaveMonitorADT) safeMalloc(sizeof(monitor[0]));
 
-	if(files_amount > (SLAVES_AMOUNT * FILES_PER_SLAVE))	{
+	if(files_amount > (SLAVES_MIN * FILES_PER_SLAVE))	{
 		
 		monitor->total_slaves= files_amount / FILES_PER_SLAVE;
+		monitor->start_files= START_FILES;
 	}
-	else if(files_amount< SLAVES_AMOUNT)    {
+	else if(files_amount< SLAVES_MIN)    {
 
 		monitor->total_slaves= files_amount;
+		monitor->start_files= 1;
 	}
 	else    {
 
-		monitor->total_slaves= SLAVES_AMOUNT;
+		monitor->total_slaves= SLAVES_MIN;
+		monitor->start_files = 1;
 	}
 
 	monitor->pipe_fd_read = (int *) safeMalloc(sizeof(int) * monitor->total_slaves);
@@ -186,24 +192,25 @@ slaveMonitorADT startSlaveMonitor(const int files_amount, char * files[])    {
 
 
 
-void assingToSlave(slaveMonitorADT monitor, int slave_position) {
-
-	errorManagement(! canAssign(monitor), "All files already assigned");
-
-	char * file= monitor->files[monitor->file_idx];
-
-	int len = strlen(file);
+void assingToSlave(slaveMonitorADT monitor, int slave_position,int files_amount) {
 	
-	char * new_file = (char *) safeMalloc(sizeof(char) * (len+2));
-	strcpy(new_file, file);
-	new_file[len] = SEPARATOR;
+	for(int i=0; i<files_amount; i++){
+		errorManagement(! canAssign(monitor), "All files already assigned");
 
-	new_file[len+1] = '\0';		
+		char * file= monitor->files[monitor->file_idx];
 
-	write(monitor->pipe_fd_write[slave_position], new_file, len+1);
-	// write(monitor->pipe_fd_write[slave_position],"files/prueba.txt\n",strlen("files/prueba.txt\n"));
+		int len = strlen(file);
+		
+		char * new_file = (char *) safeMalloc(sizeof(char) * (len+2));
+		strcpy(new_file, file);
+		new_file[len] = SEPARATOR;
 
-	monitor->file_idx += 1;
+		new_file[len+1] = '\0';		
+
+		write(monitor->pipe_fd_write[slave_position], new_file, len+1);
+
+		monitor->file_idx += 1;
+	}
 }
 
 

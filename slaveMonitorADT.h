@@ -13,8 +13,9 @@
     	#include "beSafe.h"
     	#include "shmADT.h"
 
-    	#define SLAVES_AMOUNT 5
+    	#define SLAVES_MIN 5
     	#define FILES_PER_SLAVE 10
+		#define START_FILES 2
 
 	#define CHILD_PATH "./slave"
 	#define SLAVE_ARGV {CHILD_PATH, NULL}
@@ -53,7 +54,7 @@
 
 
 
-    	void assingToSlave(slaveMonitorADT monitor, int slave_position);
+    	void assingToSlave(slaveMonitorADT monitor, int slave_position,int files_amount);
 
 
 
