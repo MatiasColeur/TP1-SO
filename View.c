@@ -24,7 +24,7 @@ int main(int argc, char * argv[]) {
 		shmname = argv[1];
 	}
     else    {
-
+        //warning: 'shmname' may be used uninitialized
         errorManagement(scanf("%s",shmname) == EOF, "scanf failed");
     }
 
