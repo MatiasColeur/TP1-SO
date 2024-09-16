@@ -16,14 +16,16 @@
 // open_shm:
 
 #define OPEN_READ_OFLAGS O_RDONLY
-#define OPEN_WRITE_OFLAGS O_CREAT | O_WRONLY
+#define OPEN_WRITE_OFLAGS O_CREAT | O_RDWR // Must be O_RDWR, otherwise mmap() will throw EACCES error. See mmap() man for more info.
 
 // mmap:
 
 #define MEMORY_OFFSET 0
 
+#define MMAP_FLAGS MAP_SHARED
+
 #define MMAP_READ_OFLAGS PROT_READ
-#define MMAP_WRITE_OFLAGS PROT_READ | PROT_WRITE // To do @MaxiChiate: Check if prot_read is necessary here.
+#define MMAP_WRITE_OFLAGS PROT_WRITE
 
 static inline int isNull(const void * data)	{
 
@@ -66,7 +68,7 @@ static sem_t * initSemaphore(const char * semName, size_t initial) {
 
 static void mapToMemory(sharedADT shm, int oflags ) {
 
-	errorManagement((shm->mapped = mmap(NULL, shm->size, oflags, MAP_SHARED, shm->shmFd, MEMORY_OFFSET)) == MAP_FAILED, 
+	errorManagement((shm->mapped = mmap(NULL, shm->size, oflags, MMAP_FLAGS, shm->shmFd, MEMORY_OFFSET)) == MAP_FAILED, 
 		"memory map failed");
 }
 
@@ -291,27 +293,4 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 
 	return shm->index += size;
 	
-}
-
-
-
-int main() {
-
-	sharedADT shm = createShm("Lo que mas te haga feliz en esta vida", 1024);
-	sharedADT shm2 = openShm("Lo que mas te haga feliz en esta vida", 1024);	
-	
-	char * s = "Hola\n";
-	int dim = strlen(s)+1;
-
-	writeShm(shm, s, dim*sizeof(s[0]));
-
-	char * t = safeMalloc(dim*sizeof(s[0]));
-
-	readShm(shm2, t, dim*sizeof(s[0]));
-
-	printf(t);
-
-	killShm(shm);
-	killShm(shm2);
-	killHeapMonitor();
 }
