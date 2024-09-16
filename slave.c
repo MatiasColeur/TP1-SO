@@ -7,7 +7,7 @@
 #include <string.h>
 #include "beSafe.h"
 #include <unistd.h>
-#include "slaveMonitorADT.h"
+#include "commonData.h"
 
 
 #define HASH_LENGTH 32		// Same for all hash numbers.
@@ -40,9 +40,9 @@ int main(int argc, char * argv[])	{
 
 			hash = getHash(buf);
 
-        	name = getFileName(buf);
-
-        	pid = (int) getpid();
+	        	name = getFileName(buf);
+	
+        		pid = (int) getpid();
 
 		//Everything is ok? (getpid() is always successful)
 			

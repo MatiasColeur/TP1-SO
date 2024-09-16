@@ -22,7 +22,7 @@
 
 // shm_open:
 
-#define OPEN_MODE S_IWUSR | S_IRGRP | S_IROTH // 00244
+#define OPEN_MODE 00444//S_IWUSR | S_IRGRP | S_IROTH // 00244
 
 #define OPEN_READ_OFLAGS  O_RDONLY
 #define OPEN_WRITE_OFLAGS O_CREAT | O_RDWR // Must be O_RDWR, otherwise mmap() will throw EACCES error. See mmap() man for more info.
@@ -59,7 +59,7 @@ struct sharedCDT {
 static sem_t * initSemaphore(const char * semName, size_t initial) {
 
 	sem_t * sem = sem_open(semName, O_CREAT, SEM_MODE, initial);
-	errorManagement(sem == SEM_FAILED, "shared memory open failed");
+	errorManagement(sem == SEM_FAILED, "sem open failed");
 
 	return sem;
 }

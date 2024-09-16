@@ -92,8 +92,8 @@ void safeDup2(int old_fd,int new_fd)	{
 
 int safeOpen(char * path, int flags, mode_t mode)	{
 
-	int fd = open(path,flags,mode);
-	errorManagement(fd== -1, "Open failed");
+	int fd = open(path, flags, mode);
+	errorManagement(fd == -1, "Open failed");
 
 	return fd;
 }

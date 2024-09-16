@@ -12,25 +12,22 @@
     	#include "heap.h"
     	#include "beSafe.h"
     	#include "shmADT.h"
+		#include "commonData.h"
 
     	#define SLAVES_MIN 5
     	#define FILES_PER_SLAVE 10
 		#define START_FILES 2
 
-	#define CHILD_PATH "./slave"
-	#define SLAVE_ARGV {CHILD_PATH, NULL}
-	#define SLAVE_ENVP {NULL}
-
-    	#define SEPARATOR '\n'
-	#define OUTPUT_FILE_NAME "output.txt"
-	#define COMMAND "md5sum"	
+		#define CHILD_PATH "./slave"
+		#define SLAVE_ARGV {CHILD_PATH, NULL}
+		#define SLAVE_ENVP {NULL}	
 	
 
 	typedef struct slaveMonitorCDT * slaveMonitorADT;
 
 
 
-    	void getSlaves();
+    	void getSlaves(slaveMonitorADT monitor);
 
 
 

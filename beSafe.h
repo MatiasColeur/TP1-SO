@@ -10,8 +10,9 @@
 	#include <sys/wait.h>
 	#include "heap.h"
 	#include <fcntl.h>
-	#define FALSE 0
-	#define TRUE !FALSE
+
+	#define TRUE 1 
+	#define FALSE !TRUE
 
 
 //WARNING! This library includes and uses the heap.h library; for heap memory variables, use only heap.h functions.

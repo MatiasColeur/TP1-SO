@@ -5,18 +5,16 @@
 #include "slaveMonitorADT.h"
 
 
-#define SHBUFFER_NAME "TP1 SO 2Q 2024\nGrupo 3\nChiatellino Maximo - 63477 mchiatellino@itba.edu.ar\nColeur Matias - 63461 mcoleur@itba.edu.ar\nCuri Martinez Gonzalo - 63463 gcurimartinez@itba.edu.ar\n"
+#define SHBUFFER_NAME "md5"
 #define SHBUFFER_SIZE 1024
-
-
-static inline void wait4ViewProcess();
 
 
 int main(int argc, char * argv[])	{
 
 	sharedADT shm = createShm(SHBUFFER_NAME, SHBUFFER_SIZE);
-	dprintf(STDOUT_FILENO,"%s", SHBUFFER_NAME);
-	wait4ViewProcess();
+	dprintf(STDOUT_FILENO, SHBUFFER_NAME);
+
+	wait4otherProcess();
 
 	int files_amount = argc - 1;
 
@@ -34,8 +32,3 @@ int main(int argc, char * argv[])	{
 }
 
 
-
-static inline void wait4ViewProcess()	{
-
-	sleep(2);
-}
