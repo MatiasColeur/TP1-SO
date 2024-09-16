@@ -99,15 +99,18 @@ static void newHeapVariable(void * new)	{
 	for(int i=0; i<heapMonitor.using; ++i)	{
 
 		if(heapMonitor.array[i] == new)
+			
 			return;
 	}
 
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
-		heapMonitor.array = realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
+		void ** reallocReturn = (void **) realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
 
-		errorManagement(heapMonitor.array == NULL, "Memory allocated failed");	
+		errorManagement(reallocReturn == NULL, "Memory allocated failed");	
+
+		heapMonitor.array = (void **) reallocReturn;
 		
 		heapMonitor.size += BLOCK;
 	}
