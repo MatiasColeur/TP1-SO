@@ -11,50 +11,83 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
+#define SHBUFF_SIZE 1024
+
 
 int main(int argc, char * argv[]) {
 
-	if (argc != 2) {
-		exit(EXIT_FAILURE);
+    char * shmname;
+
+	if (argc != 1)  {
+
+        errorManagement(isNull(argv[1]) || (sizeof(argv[1]) != sizeof(char)), "incorrect argument type");
+		shmname = argv[1];
 	}
+    else    {
 
-	char * shmname = argv[1];
-    int fd;	
-	struct stat st;
-
-    fd = shm_open(shmname, O_RDWR, 0666);
-    if (fd == -1) {
-        perror("Error al abrir memoria compartida");
-        exit(EXIT_FAILURE);
+        errorManagement(scanf("%s",shmname) == EOF, "scanf failed");
     }
 
-	if (fstat(fd, &st) == -1) {
-        perror("Error al obtener tamaño de la memoria compartida");
-        close(fd);
-        exit(EXIT_FAILURE);
-    }
-    size_t size = st.st_size;
+    sharedADT shm = openShm(shmname, SHBUFF_SIZE);
+
+	char buf;
+	char toPrint[SHBUFF_SIZE];
+	int i=0;
+	int shmSpaceAvailable;
+
+	while((shmSpaceAvailable = readShm(shm, &buf, 1)) != SHBUFF_SIZE && buf != EOF)	{
+		
+		toPrint[i++] = buf;
+		
+		if(buf == '\n')	{
+			
+            dprintf(STDOUT_FILENO,"%s", toPrint);
+			i=0;
+		}
+		
+	}
+	
+	closeShm(shm);
+	killHeapMonitor();
+
+    // int fd;	
+	// struct stat st;
+
+    // fd = shm_open(shmname, O_RDWR, 0666);
+    // if (fd == -1) {
+    //     perror("Error al abrir memoria compartida");
+    //     exit(EXIT_FAILURE);
+    // }
+
+	// if (fstat(fd, &st) == -1) {
+    //     perror("Error al obtener tamaño de la memoria compartida");
+    //     close(fd);
+    //     exit(EXIT_FAILURE);
+    // }
+    // size_t size = st.st_size;
 
 
-    void * mapped_mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    if (mapped_mem == MAP_FAILED) {
-        perror("Error al mapear memoria");
-        close(fd);
-        exit(EXIT_FAILURE);
-    }
+    // void * mapped_mem = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    // if (mapped_mem == MAP_FAILED) {
+    //     perror("Error al mapear memoria");
+    //     close(fd);
+    //     exit(EXIT_FAILURE);
+    // }
 
-	char * shmbuff = (char *) mapped_mem;
+	// char * shmbuff = (char *) mapped_mem;
 
-	char * token = strtok(shmbuff, ",");
-	while (token != NULL) {
-		printf("%s\n", token);
-		token = strtok(NULL, ",");
-	} 
+	// char * token = strtok(shmbuff, ",");
+	// while (token != NULL) {
+
+	//     printf("%s\n", token);
+	// 	token = strtok(NULL, ",");
+	// } 
 
 
-    munmap(mapped_mem, size);
-    close(fd);
-    shm_unlink(shmname);  // Elimina el segmento de memoria compartida cuando ya no se necesita
+    // munmap(mapped_mem, size);
+    // close(fd);
+    // shm_unlink(shmname);  // Elimina el segmento de memoria compartida cuando ya no se necesita
+
 
     return 0;
 }
