@@ -126,7 +126,7 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 					
 					memset(buff, 0, sizeof(buff));
 
-					read(monitor->pipe_fd_read[i], buff, BUFF_LEN); //TODO: Sacar magic number
+					read(monitor->pipe_fd_read[i], buff, BUFF_LEN); 
 					writeSlaveOutput(buff, shm);	//passing the shared memory as argument
 
 					if(canAssign(monitor))  {
