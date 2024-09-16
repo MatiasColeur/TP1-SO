@@ -103,7 +103,7 @@ int safeOpen(char * path, int flags, mode_t mode)	{
 void safeClose(int fd)	{
 	
 	int returnValue= close(fd);
-	errorManagement(fd==-1, "Close failed");
+	errorManagement(returnValue==-1, "Close failed");
 }
 
 
