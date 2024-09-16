@@ -29,7 +29,6 @@ static void writeSlaveOutput(char * str, sharedADT shm)   {
 	writeShm(shm, str, len);
 
 	int outputFd = safeOpen(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666);
-	//write(outputFd, str, len);
 	dprintf(outputFd,"%s",str);
 
 	safeClose(outputFd);
@@ -99,7 +98,7 @@ void closePipes(slaveMonitorADT monitor)	{
 
 void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 	
-	char buff[100]; //TODO: Sacar magic number
+	char buff[BUFF_LEN]; //TODO: Sacar magic number
 
 	fd_set read_fd;
 
@@ -127,7 +126,7 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 					
 					memset(buff, 0, sizeof(buff));
 
-					read(monitor->pipe_fd_read[i], buff, 1000);
+					read(monitor->pipe_fd_read[i], buff, BUFF_LEN); //TODO: Sacar magic number
 					writeSlaveOutput(buff, shm);	//passing the shared memory as argument
 
 					if(canAssign(monitor))  {
