@@ -12,6 +12,7 @@ struct slaveMonitorCDT  {
 	int * pipe_fd_read;     // of the master (where master writes and reads)
 
 	int total_slaves;
+	int slaves_started;
 
 	char ** files;
 	int total_files;
@@ -38,7 +39,7 @@ void getSlaves(slaveMonitorADT monitor) {
 
 	for(int i=0; i< monitor->total_slaves; i++)	{
 		
-	        getOneSlave(monitor, i);
+	    getOneSlave(monitor, i);
 	}
 }
 
@@ -73,7 +74,8 @@ void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
 		
 		monitor->pipe_fd_read[slave_position] = pipe_read[0];
 		monitor->pipe_fd_write[slave_position] = pipe_write[1];
-		
+		monitor->slaves_started++;
+
 		if(canAssign(monitor))  {
 
 			assingToSlave(monitor, slave_position);
@@ -85,8 +87,7 @@ void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
 
 void closePipes(slaveMonitorADT monitor)	{
 
-	for(int i=0; i<monitor->total_slaves; i++)   {
-
+	for(int i=0; i<monitor->slaves_started; i++)   {
 		safeClose(monitor->pipe_fd_write[i]);
 		safeClose(monitor->pipe_fd_read[i]);
 	}
@@ -179,7 +180,7 @@ slaveMonitorADT startSlaveMonitor(const int files_amount, char * files[])    {
 	monitor->total_files = files_amount;
 	monitor->files = files;
 	monitor->file_idx = 0;
-
+	monitor->slaves_started=0;
 	return monitor;
 }
 
