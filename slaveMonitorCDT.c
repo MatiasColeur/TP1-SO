@@ -26,10 +26,10 @@ static void writeSlaveOutput(char * str, sharedADT shm)   {
 
 	writeShm(shm, str, len);
 
-	int outputFd = safeOpen(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666); //TODO: safeopen.
+	int outputFd = safeOpen(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	write(outputFd, str, len);
 
-	close(outputFd);	//TODO: safeclose
+	safeClose(outputFd);
 }
 
 
@@ -61,15 +61,15 @@ void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
 		safeDup2(pipe_write[0], STDIN_FILENO);		//Change pipe filedescriptors to STDIN and STDOUT and close the old_fd
 		safeDup2(pipe_read[1], STDOUT_FILENO);		
 		
-		close(pipe_read[0]);					//Close pipe filedescriptors that child wont use
-		close(pipe_write[1]);
+		safeClose(pipe_read[0]);					//Close pipe filedescriptors that child wont use
+		safeClose(pipe_write[1]);
 		
 		safeExecve(CHILD_PATH, child_argv, child_envp);
 	}
 	else    {										//App process
 		
-		close(pipe_read[1]);
-		close(pipe_write[0]);					//Close pipe filedescriptors that wont be used
+		safeClose(pipe_read[1]);
+		safeClose(pipe_write[0]);					//Close pipe filedescriptors that wont be used
 		
 		monitor->pipe_fd_read[slave_position] = pipe_read[0];
 		monitor->pipe_fd_write[slave_position] = pipe_write[1];
@@ -87,8 +87,8 @@ void closePipes(slaveMonitorADT monitor)	{
 
 	for(int i=0; i<monitor->total_slaves; i++)   {
 
-		close(monitor->pipe_fd_write[i]);
-		close(monitor->pipe_fd_read[i]);
+		safeClose(monitor->pipe_fd_write[i]);
+		safeClose(monitor->pipe_fd_read[i]);
 	}
 }
 

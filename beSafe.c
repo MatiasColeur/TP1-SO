@@ -85,7 +85,7 @@ void safeDup2(int old_fd,int new_fd)	{
 	int returnVaue= dup2(old_fd,new_fd);
 
 	errorManagement(returnVaue == -1, "Dup2 failed");
-	close(old_fd);
+	safeClose(old_fd);
 }
 
 
@@ -97,3 +97,13 @@ int safeOpen(char * path, int flags, mode_t mode)	{
 
 	return fd;
 }
+
+
+
+void safeClose(int fd)	{
+	
+	int returnValue= close(fd);
+	errorManagement(fd==-1, "Close failed");
+}
+
+

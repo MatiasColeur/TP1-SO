@@ -105,9 +105,18 @@
 
 //safeOpen: calls open() wrapping the error management and returns the file descriptor
 
+//	@return file descriptor of the file opened
+
 //See open() linux manual for more information about its parameters and functionality
 
 	int safeOpen(char * path, int flags, mode_t mode);
+
+
+//safeOpen: calls close() wrapping the error management
+
+// @fd is the file descriptor which would be close
+
+void safeClose(int fd);
 
 
 
