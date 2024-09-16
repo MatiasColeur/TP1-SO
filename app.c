@@ -6,6 +6,7 @@
 #include <string.h>
 #include "heap.h"
 #include "beSafe.h"
+#include "shmADT.h"
 
 
 #define SLAVES_AMOUNT 5
@@ -14,6 +15,9 @@
 #define SLAVE_ARGV {CHILD_PATH,NULL}
 #define SLAVE_ENVP {NULL}
 #define SEPARATOR '\n'
+
+#define SHBUFFER_NAME "TP1 SO 2Q 2024\nGrupo 3\nChiatellino Maximo - 63477 mchiatellino@itba.edu.ar\nColeur Matias -  @itba.edu.ar\nCuri Martinez Gonzalo -  @itba.edu.ar\n"
+#define SHBUFFER_SIZE 1024
 
 typedef struct 
 {
@@ -49,9 +53,14 @@ static int canAssign(slave_monitor * monitor);
 
 static void writeSlaveOutput(char * str);
 
+static inline void wait4ViewProcess();
 
 
 int main(int argc, char * argv[])	{
+
+	sharedADT shm = createShm(SHBUFFER_NAME, SHBUFFER_SIZE);
+	dprintf(STDOUT_FILENO,"%s", SHBUFFER_NAME);
+	wait4ViewProcess();
 
 	int files_amount = argc - 1;
 
@@ -60,12 +69,26 @@ int main(int argc, char * argv[])	{
 	getSlaves(monitor);
 	char buff[1000];
 
-	readFromSlaves(monitor,buff);
+ 	readFromSlaves(monitor,buff);
 	closePipes(monitor);
+
+//Esto iria en readFromSlaves, TODO mañana.
+	writeShm(shm, buff /*+ indice*/, strlen(buff));
+	int outputFd = open("Output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666); //TODO: safeopen.
+	write(outputFd, buff, strlen(buff));
+
+	killShm(shm);
+	killHeapMonitor();
+
 	return 0;
 }
 
 
+
+static inline void wait4ViewProcess()	{
+
+	sleep(2);
+}
 
 
 static void getSlaves(slave_monitor * monitor)	{

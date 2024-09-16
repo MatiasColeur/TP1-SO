@@ -51,7 +51,7 @@
 
 
 
-//readShm(): Consume @size content from the shared memory and writes it into @target.
+//readShm(): Reads @size content from the shared memory and writes it into @target.
 
 //	@return the exact space avialiable in the shared memory. Is on the user translate this information to the data type @src is using.
 
