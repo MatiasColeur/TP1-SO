@@ -9,7 +9,7 @@
 	#include <errno.h>
 	#include <sys/wait.h>
 	#include "heap.h"
-
+	#include <fcntl.h>
 	#define FALSE 0
 	#define TRUE !FALSE
 
