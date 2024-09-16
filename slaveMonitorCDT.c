@@ -58,11 +58,8 @@ void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
         								
 		closePipes(monitor);
 
-		dup2(pipe_write[0], STDIN_FILENO);		//Change pipe filedescriptors to STDIN and STDOUT
-		dup2(pipe_read[1], STDOUT_FILENO);		//TO DO: @MatiasColeur hacer safeDup2
-
-		close(pipe_write[0]);					//Close pipe filedescriptors that wont be used anymore
-		close(pipe_read[1]);
+		safeDup2(pipe_write[0], STDIN_FILENO);		//Change pipe filedescriptors to STDIN and STDOUT and close the old_fd
+		safeDup2(pipe_read[1], STDOUT_FILENO);		
 		
 		close(pipe_read[0]);					//Close pipe filedescriptors that child wont use
 		close(pipe_write[1]);

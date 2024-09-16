@@ -77,3 +77,13 @@ void safeExecve(char * path, char * argv[],char * envp[])	{
 	int returnValue= execve(path,argv,envp);
 	errorManagement(returnValue== -1, "Execve failed");
 }
+
+
+
+void safeDup2(int old_fd,int new_fd)	{
+
+	int returnVaue= dup2(old_fd,new_fd);
+
+	errorManagement(returnVaue == -1, "Dup2 failed");
+	close(old_fd);
+}

@@ -95,6 +95,14 @@
 
 
 
+//safeDup2: calls dup2() wrapping the error management and closes the old file descriptor
+
+//See dup2() linux manual for more information about its parameters and functionality
+
+	void safeDup2(int old_fd, int new_fd);
+
+
+
 //-----------------------General--------------------------------------------------->>
 
 
