@@ -7,12 +7,11 @@
 #include <string.h>
 #include "beSafe.h"
 #include <unistd.h>
+#include "slaveMonitorADT.h"
 
 
-#define COMMAND "md5sum"	// Must be a string.
 #define HASH_LENGTH 32		// Same for all hash numbers.
 #define TYPE "r"		// Read file.
-#define SEPARATOR '\n'		// Char for differentiate paths.
 
 
 char * getHash(const char * path);
@@ -49,7 +48,7 @@ int main(int argc, char * argv[])	{
 			
 			if(notNull(hash) && notNull(name))	{
 			
-				dprintf(STDOUT_FILENO,"%s-%d-%s", name, pid, hash);
+				dprintf(STDOUT_FILENO,"%s-%d-%s\n", name, pid, hash);
 			}
 					
 		//Reset buffer:

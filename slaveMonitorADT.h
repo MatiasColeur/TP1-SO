@@ -21,9 +21,12 @@
 	#define SLAVE_ENVP {NULL}
 
     	#define SEPARATOR '\n'
-
+	#define OUTPUT_FILE_NAME "output.txt"
+	#define COMMAND "md5sum"	
 	
+
 	typedef struct slaveMonitorCDT * slaveMonitorADT;
+
 
 
     	void getSlaves();
@@ -34,7 +37,7 @@
 
 
 
-    	void getOneSlave(slaveMonitorADT monitor,int slave_position);
+    	void getOneSlave(slaveMonitorADT monitor, int slave_position);
 
 
 
@@ -42,11 +45,11 @@
 
 
 
-    	void readFromSlaves(slaveMonitorADT monitor,char * buff);
+    	void readFromSlaves(slaveMonitorADT monitor, sharedADT shm);
 
 
 
-    	slaveMonitorADT startSlaveMonitor(const int files_amount,char * files[]);
+    	slaveMonitorADT startSlaveMonitor(const int files_amount, char * files[]);
 
 
 
@@ -55,10 +58,6 @@
 
 
     	int canAssign(slaveMonitorADT monitor);
-
-
-
-    	void writeSlaveOutput(char * str);
 
 
 

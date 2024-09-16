@@ -20,32 +20,46 @@ struct slaveMonitorCDT  {
 };
 
 
+static void writeSlaveOutput(char * str, sharedADT shm)   {
+	
+	int len = strlen(str) + 1;
+
+	writeShm(shm, str, len);
+
+	int outputFd = open(OUTPUT_FILE_NAME, O_WRONLY | O_CREAT | O_APPEND, 0666); //TODO: safeopen.
+	write(outputFd, str, len);
+
+	close(outputFd);	//TODO: safeclose
+}
+
+
+
 void getSlaves(slaveMonitorADT monitor) {
 
 	for(int i=0; i< monitor->total_slaves; i++)	{
 		
-	        getOneSlave(monitor,i);
+	        getOneSlave(monitor, i);
 	}
 }
 
 
 
-void getOneSlave(slaveMonitorADT monitor,int slave_position)	{
+void getOneSlave(slaveMonitorADT monitor, int slave_position)	{
 	
 	char * child_argv[] = SLAVE_ARGV;					
 	char * child_envp[] = SLAVE_ENVP;
 
-	int * pipe_read=safePipeD();				//where master will read
-	int * pipe_write= safePipeD();				//where master will write
+	int * pipe_read = safePipeD();				//where master will read
+	int * pipe_write = safePipeD();				//where master will write
 
-	pid_t pid= safeFork();
+	pid_t pid = safeFork();
 	
-	if(pid==0)  {                   //Slave process
+	if(pid == 0)  {                   //Slave process
         								
 		closePipes(monitor);
 
-		dup2(pipe_write[0],STDIN_FILENO);		//Change pipe filedescriptors to STDIN and STDOUT
-		dup2(pipe_read[1],STDOUT_FILENO);		//TO DO: @MatiasColeur hacer safeDup2
+		dup2(pipe_write[0], STDIN_FILENO);		//Change pipe filedescriptors to STDIN and STDOUT
+		dup2(pipe_read[1], STDOUT_FILENO);		//TO DO: @MatiasColeur hacer safeDup2
 
 		close(pipe_write[0]);					//Close pipe filedescriptors that wont be used anymore
 		close(pipe_read[1]);
@@ -53,15 +67,15 @@ void getOneSlave(slaveMonitorADT monitor,int slave_position)	{
 		close(pipe_read[0]);					//Close pipe filedescriptors that child wont use
 		close(pipe_write[1]);
 		
-		safeExecve(CHILD_PATH,child_argv,child_envp);
+		safeExecve(CHILD_PATH, child_argv, child_envp);
 	}
 	else    {										//App process
 		
 		close(pipe_read[1]);
 		close(pipe_write[0]);					//Close pipe filedescriptors that wont be used
 		
-		monitor->pipe_fd_read[slave_position]=pipe_read[0];
-		monitor->pipe_fd_write[slave_position]=pipe_write[1];
+		monitor->pipe_fd_read[slave_position] = pipe_read[0];
+		monitor->pipe_fd_write[slave_position] = pipe_write[1];
 		
 		if(canAssign(monitor))  {
 
@@ -74,7 +88,7 @@ void getOneSlave(slaveMonitorADT monitor,int slave_position)	{
 
 void closePipes(slaveMonitorADT monitor)	{
 
-	for(int i=0; i<monitor->total_slaves;i++)   {
+	for(int i=0; i<monitor->total_slaves; i++)   {
 
 		close(monitor->pipe_fd_write[i]);
 		close(monitor->pipe_fd_read[i]);
@@ -83,12 +97,14 @@ void closePipes(slaveMonitorADT monitor)	{
 
 
 
-void readFromSlaves(slaveMonitorADT monitor,char * buff)    {
+void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
+	
+	char buff[1000]; //TODO: Sacar magic number
 
 	fd_set read_fd;
 
 	int fd_available;
-	int maxFD= getMaxFD(monitor->pipe_fd_read,monitor->total_slaves);
+	int maxFD= getMaxFD(monitor->pipe_fd_read, monitor->total_slaves);
 
 	int files_shown=0;
 
@@ -96,25 +112,25 @@ void readFromSlaves(slaveMonitorADT monitor,char * buff)    {
 
 		FD_ZERO(&read_fd);
 
-		for(int i=0; i< monitor->total_slaves; i++) {
+		for(int i=0; i<monitor->total_slaves; i++) {
 
-			FD_SET(monitor->pipe_fd_read[i],&read_fd);
+			FD_SET(monitor->pipe_fd_read[i], &read_fd);
 		}
 
-		fd_available = select(maxFD+1,&read_fd,NULL,NULL,NULL);	//TO DO: @MatiasColeur hacer safeSelect
+		fd_available = select(maxFD+1, &read_fd, NULL, NULL, NULL);	//TO DO: @MatiasColeur hacer safeSelect
 
 		if(fd_available > 0)    {
 			
-			for(int i=0; i < monitor->total_slaves;i++) {
+			for(int i=0; i < monitor->total_slaves; i++) {
 				
-				if(FD_ISSET(monitor->pipe_fd_read[i],&read_fd)) {
+				if(FD_ISSET(monitor->pipe_fd_read[i], &read_fd)) {
 
-					read(monitor->pipe_fd_read[i],buff,1000);
-					writeSlaveOutput(buff);
+					read(monitor->pipe_fd_read[i], buff, 1000);
+					writeSlaveOutput(buff, shm);	//passing the shared memory as argument
 
 					if(canAssign(monitor))  {
 
-						assingToSlave(monitor,i);
+						assingToSlave(monitor, i);
                 			}
 
 					files_shown++;
@@ -128,7 +144,7 @@ void readFromSlaves(slaveMonitorADT monitor,char * buff)    {
 
 int getMaxFD(int * fd_array, int fd_amount) {
 
-	int to_ret=0;
+	int to_ret = 0;
 
 	for(int i=0; i<fd_amount; i++)  {
 
@@ -143,7 +159,7 @@ int getMaxFD(int * fd_array, int fd_amount) {
 
 
 
-slaveMonitorADT startSlaveMonitor(const int files_amount,char * files[])    {
+slaveMonitorADT startSlaveMonitor(const int files_amount, char * files[])    {
 
 	slaveMonitorADT monitor = (slaveMonitorADT) safeMalloc(sizeof(monitor[0]));
 
@@ -160,12 +176,12 @@ slaveMonitorADT startSlaveMonitor(const int files_amount,char * files[])    {
 		monitor->total_slaves= SLAVES_AMOUNT;
 	}
 
-	monitor->pipe_fd_read = (int *) malloc(sizeof(int) * monitor->total_slaves);
-	monitor->pipe_fd_write = (int *) malloc(sizeof(int) * monitor->total_slaves);
+	monitor->pipe_fd_read = (int *) safeMalloc(sizeof(int) * monitor->total_slaves);
+	monitor->pipe_fd_write = (int *) safeMalloc(sizeof(int) * monitor->total_slaves);
 
-	monitor->total_files=files_amount;
-	monitor->files=files;
-	monitor->file_idx=0;
+	monitor->total_files = files_amount;
+	monitor->files = files;
+	monitor->file_idx = 0;
 
 	return monitor;
 }
@@ -178,18 +194,18 @@ void assingToSlave(slaveMonitorADT monitor, int slave_position) {
 
 	char * file= monitor->files[monitor->file_idx];
 
-	int len= strlen(file);
+	int len = strlen(file);
 	
-	char * new_file= (char *) malloc(len+2);
-	strcpy(new_file,file);
+	char * new_file = (char *) safeMalloc(sizeof(char) * (len+2));
+	strcpy(new_file, file);
 	new_file[len] = SEPARATOR;
 
 	new_file[len+1] = '\0';		
 
-	write(monitor->pipe_fd_write[slave_position],new_file,len+1);
+	write(monitor->pipe_fd_write[slave_position], new_file, len+1);
 	// write(monitor->pipe_fd_write[slave_position],"files/prueba.txt\n",strlen("files/prueba.txt\n"));
 
-	monitor->file_idx+=1;
+	monitor->file_idx += 1;
 }
 
 
@@ -201,7 +217,3 @@ int canAssign(slaveMonitorADT monitor)  {
 
 
 
-void writeSlaveOutput(char * str)   {
-
-	printf("%s\n",str);
-}

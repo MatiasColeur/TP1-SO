@@ -23,15 +23,9 @@ int main(int argc, char * argv[])	{
 	slaveMonitorADT monitor= startSlaveMonitor(files_amount,argv+1);
 
 	getSlaves(monitor);
-	char buff[1000];
 
- 	readFromSlaves(monitor,buff);
+ 	readFromSlaves(monitor, shm);
 	closePipes(monitor);
-
-//Esto iria en readFromSlaves, TODO mañana.
-//	writeShm(shm, buff, strlen(buff));
-//	int outputFd = open("Output.txt", O_WRONLY | O_CREAT | O_TRUNC, 0666); //TODO: safeopen.
-//	write(outputFd, buff, strlen(buff));
 
 	killShm(shm);
 	killHeapMonitor();
