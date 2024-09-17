@@ -1,6 +1,3 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
-
 //slave.c
 
 #include <stdio.h>
@@ -8,7 +5,6 @@
 #include "beSafe.h"
 #include <unistd.h>
 #include "commonData.h"
-
 
 #define HASH_LENGTH 32		// Same for all hash numbers.
 #define TYPE "r"		// Read file.

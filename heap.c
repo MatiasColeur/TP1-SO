@@ -1,10 +1,8 @@
-// This is a personal academic project. Dear PVS-Studio, please check it.
-// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 //heap.c
 
 #include "heap.h"
-#include <stdio.h>	// for heapMonitor jokes.
+#include <stdio.h>	// for heapMonitor dialogs.
 
 // Number of positions added while being reallocated in heap memory. Must be >0:
 
