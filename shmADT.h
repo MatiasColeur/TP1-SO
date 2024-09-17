@@ -16,6 +16,7 @@
 	#define SHM_NAME "/shm-"
 	#define MUTEX_NAME "/semMutex-"
 	#define SYNC_NAME "/semSync-"
+	#define KILL_NAME "/semKill-"
 
 
 	typedef struct sharedCDT * sharedADT;

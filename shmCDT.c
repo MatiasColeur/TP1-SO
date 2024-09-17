@@ -8,8 +8,9 @@
 
 #include "shmADT.h"
 
-#define MUTEX_INITIAL 1                              
-#define SYNC_INITIAL 0
+#define MUTEX_INITIAL 	1                              
+#define SYNC_INITIAL 	0
+#define KILL_INITIAL 	0
 
 //Since both sem and shm have flags to control read and write permissions, 
 // we can afford to enable all permissions for the file itself:
@@ -19,6 +20,7 @@
 
 #define SEM_MODE 00777//S_IRWXU | S_IRWXG | S_IRWXO // 00777
 
+#define SEM_OFLAGS O_CREAT | O_RDWR
 
 // shm_open:
 
@@ -44,12 +46,20 @@ struct sharedCDT {
 	char * shmName;
 	size_t size;
 	size_t index;
+
 	sem_t * mutex;	
 	sem_t * sync; 
+	sem_t * kill;
+
 	char * mutexName;
 	char * syncName;
+	char * killName;
 }; 
 
+
+#define down(x) (sem_wait(x))
+
+#define up(x) 	(sem_post(x))
 
 
 //-----------------------Spawn shmADT----------------------
@@ -58,7 +68,7 @@ struct sharedCDT {
 
 static sem_t * initSemaphore(const char * semName, size_t initial) {
 
-	sem_t * sem = sem_open(semName, O_CREAT, SEM_MODE, initial);
+	sem_t * sem = sem_open(semName, SEM_OFLAGS, SEM_MODE, initial);
 	errorManagement(sem == SEM_FAILED, "sem open failed");
 
 	return sem;
@@ -93,17 +103,20 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 	shm->size = size;
 	shm->index = 0;
 
-	shm->shmName = (char *) safeCalloc(strlen(SHM_NAME) + strlen(name) + 1, sizeof(char));
-	shm->mutexName = (char *) safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
-	shm->syncName = (char *) safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
+	shm->shmName = (char *) 	safeCalloc(strlen(SHM_NAME) + strlen(name) + 1, sizeof(char));
+	shm->mutexName = (char *) 	safeCalloc(strlen(MUTEX_NAME) + strlen(name) + 1, sizeof(char));
+	shm->syncName = (char *) 	safeCalloc(strlen(SYNC_NAME) + strlen(name) + 1, sizeof(char));
+	shm->killName = (char *)	safeCalloc(strlen(KILL_NAME) + strlen(name) + 1, sizeof(char));
 
 	strcpy(shm->shmName, SHM_NAME);
 	strcpy(shm->mutexName, MUTEX_NAME);
 	strcpy(shm->syncName, SYNC_NAME);
+	strcpy(shm->killName, KILL_NAME);
 
 	strcat(shm->shmName, name);
 	strcat(shm->mutexName, name);
 	strcat(shm->syncName, name);
+	strcat(shm->killName, name);
 		
 	return shm;
 }
@@ -111,8 +124,10 @@ static sharedADT createBaseShm(const char * name, size_t size)	{
 
 static void createResources(sharedADT shm)	{
 	
-	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
-	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
+	shm->mutex = 	initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = 	initSemaphore(shm->syncName, SYNC_INITIAL);
+	shm->kill = 	initSemaphore(shm->killName, KILL_INITIAL);
+
 	openShmHandler(shm, OPEN_WRITE_OFLAGS);
 	truncateFd(shm);
 	mapToMemory(shm, MMAP_WRITE_OFLAGS);
@@ -121,8 +136,10 @@ static void createResources(sharedADT shm)	{
 
 static void openResources(sharedADT shm)	{
 
-	shm->mutex = initSemaphore(shm->mutexName, MUTEX_INITIAL);
-	shm->sync = initSemaphore(shm->syncName, SYNC_INITIAL);
+	shm->mutex = 	initSemaphore(shm->mutexName, MUTEX_INITIAL);
+	shm->sync = 	initSemaphore(shm->syncName, SYNC_INITIAL);
+	shm->kill = 	initSemaphore(shm->killName, KILL_INITIAL);
+
 	openShmHandler(shm, OPEN_READ_OFLAGS);	
 
 	mapToMemory(shm, MMAP_READ_OFLAGS);
@@ -134,6 +151,7 @@ static void unlinkResources(sharedADT shm)	{
 	shm_unlink(shm->shmName);
 	sem_unlink(shm->mutexName);
 	sem_unlink(shm->syncName);
+	sem_unlink(shm->killName);
 }
 
 
@@ -190,6 +208,7 @@ static void closeResources(sharedADT shm)	{
 	unmapFromMemory(shm);
 	closeSemaphore(shm->mutex);
 	closeSemaphore(shm->sync);
+	closeSemaphore(shm->kill);
 	closeShmHandler(shm);
 }
 
@@ -201,6 +220,9 @@ void killShm(sharedADT shm)	{
 
 		return;
 	}
+	
+	down(shm->kill);
+	sleep(3);
 
 	unlinkResources(shm);	
 
@@ -216,11 +238,14 @@ void closeShm(sharedADT shm)	{
 		return;
 	}
 
+	up(shm->kill);
+
 	closeResources(shm);
 	
 	freeHeapVariable(shm->shmName);
 	freeHeapVariable(shm->syncName);
 	freeHeapVariable(shm->mutexName);
+	freeHeapVariable(shm->killName);
 	freeHeapVariable(shm);
 }
 
@@ -229,8 +254,7 @@ void closeShm(sharedADT shm)	{
 //-----------------------Read/write----------------------
 
 
-#define down(x) (sem_wait(x))
-#define up(x) (sem_post(x))
+
 
 
 static inline int notEnoughSpaceInBuffer(sharedADT shm, size_t size) {
@@ -254,15 +278,15 @@ size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 		killShm(shm);
 		errorManagement( 1, "write shm failed");
 	}
-	
+
 	down(shm->mutex);
-	
+
 		memcpy(shm->mapped + shm->index, src, size); 
 
 	up(shm->mutex);
 
 	up(shm->sync);
-	
+
 	return shm->index += size ; 
 }
 
@@ -283,14 +307,15 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 		errorManagement(1, "read shm failed");
 	}
 
+	printf("read");
 	down(shm->sync);
-
+printf("read");
 	down(shm->mutex);
-	
+	printf("read");
 		memcpy(target, shm->mapped, size);
-
+printf("read");
 	up(shm->mutex);
-
+printf("read");
 	return shm->index += size;
 	
 }

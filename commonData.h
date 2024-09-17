@@ -9,7 +9,7 @@
 
     static inline void wait4otherProcess()	{
 
-	    sleep(2);
+	    sleep(5);
     }
 
 

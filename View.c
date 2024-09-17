@@ -22,7 +22,7 @@ int main(int argc, char * argv[]) {
 
 	if (argc != 1)  {
 
-        errorManagement(isNull(argv[1]) || (sizeof(argv[1]) != sizeof(char)), "incorrect argument type");
+        errorManagement(isNull(argv[1]) || (sizeof(argv[1][0]) != sizeof(char)), "incorrect argument type");
 		strcat(shmname, argv[1]);
 	}
     else    {
@@ -42,10 +42,14 @@ int main(int argc, char * argv[]) {
 	char buf;
 	char toPrint[SHBUFF_SIZE];
 	int i=0;
-	int shmSpaceRead;
+    int go = TRUE;
 
-	while((shmSpaceRead = readShm(shm, &buf, 1)) != SHBUFF_SIZE && buf != EOF)	{
-		
+whatsUpHeapMonitor();
+
+    while(go)   {
+
+        readShm(shm, &buf, 1);
+
 		toPrint[i++] = buf;
 		
 		if(buf == SEPARATOR)	{
@@ -53,10 +57,24 @@ int main(int argc, char * argv[]) {
             toPrint[i+1] = '\0';
             dprintf(STDOUT_FILENO,"%s", toPrint);
 			i=0;
+            go = FALSE;
 		}
-		
 	}
-	
+
+
+	// while((shmSpaceRead = readShm(shm, &buf, 1)) != SHBUFF_SIZE && buf != EOF)	{
+		
+	// 	toPrint[i++] = buf;
+		
+	// 	if(buf == SEPARATOR)	{
+			
+    //         toPrint[i+1] = '\0';
+    //         dprintf(STDOUT_FILENO,"%s", toPrint);
+	// 		i=0;
+	// 	}
+		
+	// }
+
 	closeShm(shm);
 	killHeapMonitor();
 
