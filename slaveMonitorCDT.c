@@ -98,8 +98,7 @@ void closePipes(slaveMonitorADT monitor)	{
 
 void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 	
-	char buff[BUFF_LEN]; //TODO: Sacar magic number
-
+	char buff[BUFF_LEN]; 
 	fd_set read_fd;
 
 	int fd_available;
@@ -140,6 +139,12 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 			}
 		}
 	}
+
+//End signal to view:
+
+	char end = EOF;
+	writeShm(shm, &end, 1);
+
 }
 
 

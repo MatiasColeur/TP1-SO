@@ -13,7 +13,6 @@
 #include <string.h>
 #include "commonData.h"
 
-#define SHBUFF_SIZE 1024 //TODO sacar esto
 
 
 int main(int argc, char * argv[]) {
@@ -37,19 +36,14 @@ int main(int argc, char * argv[]) {
         shmname[i] = '\0';
     }
 
-    sharedADT shm = openShm(shmname, SHBUFF_SIZE);
+    sharedADT shm = openShm(shmname, SHBUFFER_SIZE);
 
-	char buf;
-	char toPrint[SHBUFF_SIZE];
+	char buf = 0;
+	char toPrint[SHBUFFER_SIZE];
 	int i=0;
-    int go = TRUE;
 
-whatsUpHeapMonitor();
-
-    while(go)   {
-
-        readShm(shm, &buf, 1);
-
+	while(readShm(shm, &buf, 1) != SHBUFFER_SIZE && buf != EOF)	{
+		
 		toPrint[i++] = buf;
 		
 		if(buf == SEPARATOR)	{
@@ -57,23 +51,9 @@ whatsUpHeapMonitor();
             toPrint[i+1] = '\0';
             dprintf(STDOUT_FILENO,"%s", toPrint);
 			i=0;
-            go = FALSE;
 		}
+		
 	}
-
-
-	// while((shmSpaceRead = readShm(shm, &buf, 1)) != SHBUFF_SIZE && buf != EOF)	{
-		
-	// 	toPrint[i++] = buf;
-		
-	// 	if(buf == SEPARATOR)	{
-			
-    //         toPrint[i+1] = '\0';
-    //         dprintf(STDOUT_FILENO,"%s", toPrint);
-	// 		i=0;
-	// 	}
-		
-	// }
 
 	closeShm(shm);
 	killHeapMonitor();
