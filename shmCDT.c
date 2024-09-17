@@ -132,8 +132,8 @@ static void openResources(sharedADT shm)	{
 static void unlinkResources(sharedADT shm)	{
 
 	shm_unlink(shm->shmName);
-	shm_unlink(shm->mutexName);
-	shm_unlink(shm->syncName);
+	sem_unlink(shm->mutexName);
+	sem_unlink(shm->syncName);
 }
 
 
