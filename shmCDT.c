@@ -217,7 +217,7 @@ void killShm(sharedADT shm)	{
 	}
 	
 	down(shm->kill);
-	sleep(3);
+  sleep(5);
 
 	unlinkResources(shm);	
 
@@ -302,15 +302,24 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 		errorManagement(1, "read shm failed");
 	}
 
-	printf("read");
+/* TODO: ver como se inicializan los semaforos
+ *
+  int value = 0;
+  sem_getvalue(shm->sync, &value);
+  sem_getvalue(shm->mutex, &value);
+  sem_getvalue(shm->kill, &value);
+
+  */
+
+
 	down(shm->sync);
-printf("read");
+
 	down(shm->mutex);
-	printf("read");
+
 		memcpy(target, shm->mapped, size);
-printf("read");
+
 	up(shm->mutex);
-printf("read");
+
 	return shm->index += size;
 	
 }

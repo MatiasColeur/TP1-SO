@@ -3,7 +3,7 @@
 #include "slaveMonitorADT.h"
 
 
-#define SHBUFFER_NAME "md5\n"
+#define SHBUFFER_NAME "md5"
 #define SHBUFFER_SIZE 1024
 
 

@@ -20,16 +20,17 @@ int main(int argc, char * argv[]) {
 	if (argc != 1)  {
 
         errorManagement(isNull(argv[1]) || (sizeof(argv[1][0]) != sizeof(char)), "incorrect argument type");
-		strcat(shmname, argv[1]);
+		strcpy(shmname, argv[1]);
 	}
     else    {
         
-        int i = 0;
+        int i = EOF;//-1;
         do  {
 
+            i++;
             errorManagement(read(STDIN_FILENO, shmname+i, 1) == -1, "read failed");        
 
-        }   while(shmname[i++] != '\0');
+        }   while(shmname[i] != '\0' && shmname[i] != EOF);
 
         shmname[i] = '\0';
     }
@@ -46,7 +47,7 @@ int main(int argc, char * argv[]) {
 		
 		if(buf == SEPARATOR)	{
 			
-            toPrint[i+1] = '\0';
+            toPrint[i] = '\0';
             dprintf(STDOUT_FILENO,"%s", toPrint);
 			i=0;
 		}
@@ -56,5 +57,4 @@ int main(int argc, char * argv[]) {
 	closeShm(shm);
 	killHeapMonitor();
 
-    return 0;
 }
