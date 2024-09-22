@@ -24,14 +24,18 @@ int main(int argc, char * argv[]) {
 	}
     else    {
         
-        int i = EOF;//-1;
+        int i = -1;
         do  {
-
+	
+		printf("OK\n");
             i++;
             errorManagement(read(STDIN_FILENO, shmname+i, 1) == -1, "read failed");        
 
-        }   while(shmname[i] != '\0' && shmname[i] != EOF);
+	    for(int j=0; j<=i; j++)
+		    putchar(shmname[j]);
+        }   while(shmname[i] != SEPARATOR);
 
+	shmname[i++] = SEPARATOR;
         shmname[i] = '\0';
     }
 
