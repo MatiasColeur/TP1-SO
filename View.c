@@ -27,15 +27,11 @@ int main(int argc, char * argv[]) {
         int i = -1;
         do  {
 	
-		printf("OK\n");
             i++;
             errorManagement(read(STDIN_FILENO, shmname+i, 1) == -1, "read failed");        
 
-	    for(int j=0; j<=i; j++)
-		    putchar(shmname[j]);
         }   while(shmname[i] != SEPARATOR);
 
-	shmname[i++] = SEPARATOR;
         shmname[i] = '\0';
     }
 
@@ -45,7 +41,7 @@ int main(int argc, char * argv[]) {
 	char toPrint[SHBUFFER_SIZE];
 	int i=0;
 
-	while(readShm(shm, &buf, 1) != SHBUFFER_SIZE && buf != EOF)	{
+	while( (readShm(shm, &buf, 1) != SHBUFFER_SIZE) && (buf != EOF) )	{
 		
 		toPrint[i++] = buf;
 		

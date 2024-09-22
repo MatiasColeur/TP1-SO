@@ -44,6 +44,7 @@
 
 	size_t writeShm(sharedADT shm, const void * src, size_t size);
 
+	void writeEndShm(sharedADT shm, char end);
 
 //readShm(): Reads @size content from the shared memory and writes it into @target.
 

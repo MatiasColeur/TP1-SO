@@ -3,7 +3,7 @@
 #include "slaveMonitorADT.h"
 
 
-#define SHBUFFER_NAME "md5\n"
+#define SHBUFFER_NAME "md5"
 #define SHBUFFER_SIZE 1024
 
 
@@ -11,6 +11,7 @@ int main(int argc, char * argv[])	{
 
 	sharedADT shm = createShm(SHBUFFER_NAME, SHBUFFER_SIZE);
 	dprintf(STDOUT_FILENO,"%s", SHBUFFER_NAME);
+	dprintf(STDOUT_FILENO, "%c", SEPARATOR);
 
 	wait4otherProcess();
 

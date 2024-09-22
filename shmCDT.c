@@ -52,9 +52,9 @@ struct sharedCDT {
 }; 
 
 
-#define down(x) (sem_wait(x))
+#define down(x) (sem_wait((x)))
 
-#define up(x) 	(sem_post(x))
+#define up(x) 	(sem_post((x)))
 
 
 //-----------------------Spawn shmADT----------------------
@@ -258,6 +258,23 @@ static inline int notEnoughSpaceInBuffer(sharedADT shm, size_t size) {
 }
 
 
+static inline void upNtimes(size_t n, sem_t * sem)	{
+
+	for(size_t i=0; i<n; i++)	{
+		up(sem);
+	}
+}
+
+
+static inline void downNtimes(size_t n, sem_t * sem)	{
+
+	for(size_t i=0; i<n; i++)	{
+		down(sem);
+	}
+}
+
+
+
 
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
@@ -280,9 +297,19 @@ size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
 	up(shm->mutex);
 
-	up(shm->sync);
+	//up(shm->sync);
+	upNtimes(size, shm->sync);
+	
 
 	return shm->index += size ; 
+}
+
+
+void writeEndShm(sharedADT shm, char end) {
+
+    char endV[2] = {end, 0};  //probably EOF
+
+    writeShm(shm, endV, 2);
 }
 
 
@@ -303,20 +330,26 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 	}
 
 /* TODO: ver como se inicializan los semaforos
- *
-  int value = 0;
+ */
+
+/*  int value = 0;
   sem_getvalue(shm->sync, &value);
+  printf("sync en read: %d\n", value);
   sem_getvalue(shm->mutex, &value);
+  printf("mutex en read: %d\n", value);
   sem_getvalue(shm->kill, &value);
+  printf("kill en read: %d\n", value);*/
 
-  */
 
 
-	down(shm->sync);
+//	down(shm->sync);
+
+
+  	downNtimes(size, shm->sync);
 
 	down(shm->mutex);
 
-		memcpy(target, shm->mapped, size);
+		memcpy(target, shm->mapped + shm->index, size); 
 
 	up(shm->mutex);
 

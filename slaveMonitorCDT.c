@@ -140,8 +140,7 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 
 //End signal to view:
 
-	char end = EOF;
-	writeShm(shm, &end, 1);
+  writeEndShm(shm, EOF);
 
 }
 
