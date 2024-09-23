@@ -19,7 +19,7 @@
 
 // shm_open:
 
-#define OPEN_MODE 00777 // S_IWUSR | S_IRGRP | S_IROTH // 00244
+#define OPEN_MODE S_IWUSR | S_IRGRP | S_IROTH // 00244
 
 #define OPEN_READ_OFLAGS  O_CREAT | O_RDWR //O_CREAT | O_RDONLY
 #define OPEN_WRITE_OFLAGS O_CREAT | O_RDWR // Must be O_RDWR, otherwise mmap() will throw EACCES error. See mmap() man for more info.
