@@ -13,7 +13,7 @@
 
 // sem_open:
 
-#define SEM_MODE 00777//S_IRWXU | S_IRWXG | S_IRWXO // 00777
+#define SEM_MODE S_IRWXU | S_IRWXG | S_IRWXO // 00777
 
 #define SEM_OFLAGS O_CREAT | O_RDWR
 
@@ -217,7 +217,6 @@ void killShm(sharedADT shm)	{
 	}
 	
 	down(shm->kill);
-  sleep(5);
 
 	unlinkResources(shm);	
 
@@ -297,9 +296,7 @@ size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 
 	up(shm->mutex);
 
-	//up(shm->sync);
 	upNtimes(size, shm->sync);
-	
 
 	return shm->index += size ; 
 }
@@ -328,22 +325,6 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 		closeShm(shm);
 		errorManagement(1, "read shm failed");
 	}
-
-/* TODO: ver como se inicializan los semaforos
- */
-
-/*  int value = 0;
-  sem_getvalue(shm->sync, &value);
-  printf("sync en read: %d\n", value);
-  sem_getvalue(shm->mutex, &value);
-  printf("mutex en read: %d\n", value);
-  sem_getvalue(shm->kill, &value);
-  printf("kill en read: %d\n", value);*/
-
-
-
-//	down(shm->sync);
-
 
   	downNtimes(size, shm->sync);
 
