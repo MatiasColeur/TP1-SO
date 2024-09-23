@@ -137,11 +137,6 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 			}
 		}
 	}
-
-//End signal to view:
-
-  writeEndShm(shm, EOF);
-
 }
 
 

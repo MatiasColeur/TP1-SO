@@ -11,7 +11,7 @@
 
     static inline void wait4otherProcess()	{
 
-	    sleep(5);
+	    sleep(2);
     }
 
 

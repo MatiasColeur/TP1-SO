@@ -22,6 +22,8 @@ int main(int argc, char * argv[])	{
 	getSlaves(monitor);
 
  	readFromSlaves(monitor, shm);
+  writeEndShm(shm, EOF);
+
 	closePipes(monitor);
 
 	killShm(shm);

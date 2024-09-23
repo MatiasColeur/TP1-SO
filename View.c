@@ -38,18 +38,27 @@ int main(int argc, char * argv[]) {
     sharedADT shm = openShm(shmname, SHBUFFER_SIZE);
 
 	char buf = 0;
-	char toPrint[SHBUFFER_SIZE];
+	char toPrint[SHBUFFER_SIZE] = {0};
 	int i=0;
 
-	while( (readShm(shm, &buf, 1) != SHBUFFER_SIZE) && (buf != EOF) )	{
+	while( (readShm(shm, &buf, 1) < SHBUFFER_SIZE) && (buf != EOF) )	{
 		
-		toPrint[i++] = buf;
-		
+    if(buf != '\0') {
+
+		    toPrint[i++] = buf;
+    }
+
 		if(buf == SEPARATOR)	{
-			
+
             toPrint[i] = '\0';
-            dprintf(STDOUT_FILENO,"%s", toPrint);
-			i=0;
+
+            i=0;
+
+            while( toPrint[i] != '\0') {
+                errorManagement(write(STDOUT_FILENO, toPrint+i++, 1) == -1, "write failed");
+            }
+
+			      i=0;
 		}
 		
 	}

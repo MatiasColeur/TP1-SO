@@ -2,7 +2,7 @@
 CC = gcc
 
 # Compiler flags
-CFLAGS = -Wall -g -O2
+CFLAGS = -Wall -g -O3
 
 # Source files
 SRCS_APP = app.c slaveMonitorCDT.c shmCDT.c heap.c beSafe.c
