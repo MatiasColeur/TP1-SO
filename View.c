@@ -41,28 +41,27 @@ int main(int argc, char * argv[]) {
 	char toPrint[SHBUFFER_SIZE] = {0};
 	int i=0;
 
-	while( (readShm(shm, &buf, 1) < SHBUFFER_SIZE) && (buf != EOF) )	{
+	while( (readShm(shm, &buf, 1) < SHBUFFER_SIZE) && (buf != CHAR_EOF) )	{
 		
     if(buf != '\0') {
 
-		    toPrint[i++] = buf;
+		toPrint[i++] = buf;
     }
 
-		if(buf == SEPARATOR)	{
+    if(buf == SEPARATOR)	{
 
-            toPrint[i] = '\0';
+        toPrint[i] = '\0';
 
-            i=0;
+        i=0;
 
-            while( toPrint[i] != '\0') {
-                errorManagement(write(STDOUT_FILENO, toPrint+i++, 1) == -1, "write failed");
-            }
+        while( toPrint[i] != '\0') {
+            errorManagement(write(STDOUT_FILENO, toPrint+i++, 1) == -1, "write failed");
+        }
 
-			      i=0;
-		}
+        i=0;
+    }
 		
 	}
-
 	closeShm(shm);
 	killHeapMonitor();
 

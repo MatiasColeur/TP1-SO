@@ -321,7 +321,6 @@ size_t readShm(sharedADT shm, void * target, size_t size)	{
 	if(notEnoughSpaceInBuffer(shm, size))	{
 
 //Only the view process will write in the shm:
-
 		closeShm(shm);
 		errorManagement(1, "read shm failed");
 	}

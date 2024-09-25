@@ -4,7 +4,6 @@
 
 
 #define SHBUFFER_NAME "md5"
-#define SHBUFFER_SIZE 1024
 
 
 int main(int argc, char * argv[])	{
@@ -22,10 +21,9 @@ int main(int argc, char * argv[])	{
 	getSlaves(monitor);
 
  	readFromSlaves(monitor, shm);
-  writeEndShm(shm, EOF);
+	writeEndShm(shm, EOF);
 
 	closePipes(monitor);
-
 	killShm(shm);
 	killHeapMonitor();
 
