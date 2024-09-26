@@ -59,6 +59,9 @@ slave
 # ignore
 .*
 
+# Directories
+files/
+
 # except .gitignore
 !.gitignore
 

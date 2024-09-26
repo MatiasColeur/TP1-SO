@@ -20,9 +20,10 @@ struct slaveMonitorCDT  {
 };
 
 
-static void writeSlaveOutput(char * str, sharedADT shm)   {
+static int writeSlaveOutput(char * str, sharedADT shm, size_t size)   {
 	
 	int len = strlen(str) + 1;
+	int amount=0;
 
 	writeShm(shm, str, len);
 
@@ -30,6 +31,15 @@ static void writeSlaveOutput(char * str, sharedADT shm)   {
 	dprintf(outputFd,"%s",str);
 
 	safeClose(outputFd);
+
+	for(int i=0; i<len;i++){
+		
+		if(str[i]== SEPARATOR){
+			amount++;
+		}
+	}
+	return amount;
+	
 }
 
 
@@ -105,7 +115,6 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 	int files_shown=0;
 
 	while(files_shown < monitor->total_files)   {
-
 		FD_ZERO(&read_fd);
 
 		for(int i=0; i<monitor->total_slaves; i++) {
@@ -124,7 +133,7 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
 					memset(buff, 0, sizeof(buff));
 
 					read(monitor->pipe_fd_read[i], buff, BUFF_LEN); 
-					writeSlaveOutput(buff, shm);	//passing the shared memory as argument
+					files_shown += writeSlaveOutput(buff, shm,BUFF_LEN);	//passing the shared memory as argument
 
 					if(canAssign(monitor))  {
 
@@ -132,7 +141,6 @@ void readFromSlaves(slaveMonitorADT monitor, sharedADT shm)    {
                 	
 					}
 
-					files_shown++;
 				}
 			}
 		}

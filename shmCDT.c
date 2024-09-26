@@ -276,18 +276,23 @@ static inline void downNtimes(size_t n, sem_t * sem)	{
 
 
 size_t writeShm(sharedADT shm, const void * src, size_t size)	{
-
+		
 	if(isNull(shm) || isNull(src))	{ 
 		
 		return 0;
 	}
 
 	if(notEnoughSpaceInBuffer(shm, size))	{
+		
+		//Only the app process will write in the shm:
 
-//Only the app process will write in the shm:
+		down(shm->mutex);
+			char ret=EOF;
 
-		killShm(shm);
-		errorManagement( 1, "write shm failed");
+			memcpy(shm->mapped + shm->index, &ret, 1); 
+
+		up(shm->mutex);
+		return 0;
 	}
 
 	down(shm->mutex);
@@ -297,7 +302,6 @@ size_t writeShm(sharedADT shm, const void * src, size_t size)	{
 	up(shm->mutex);
 
 	upNtimes(size, shm->sync);
-
 	return shm->index += size ; 
 }
 
