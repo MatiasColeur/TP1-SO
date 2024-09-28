@@ -6,8 +6,8 @@
     #define SEPARATOR '\n'
 	#define OUTPUT_FILE_NAME "output.txt"
 	#define COMMAND "md5sum"
-    #define SHBUFFER_SIZE 10024
-
+    #define SHBUFFER_SIZE 3000000 
+    #define BUFF_LEN 200
 
     static inline void wait4otherProcess()	{
 

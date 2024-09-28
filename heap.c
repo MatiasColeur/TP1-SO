@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 
 //heap.c
 
@@ -8,7 +10,7 @@
 
 #define BLOCK 5
 
-#define isHeapMonitorDead() heapMonitor.alive == FALSE
+#define isHeapMonitorDead() (heapMonitor.alive == FALSE)
 #define HEAP_MONITOR_DIALOG_FORMAT "Heap Monitor: \"%s\"\n"
 
 //Heap Monitor dialogs:
@@ -92,26 +94,25 @@ static struct tHeapMonitor heapMonitor =	{
 
 static void newHeapVariable(void * new)	{
 
+	if(isNull(new)) return;
+
 	for(int i=0; i<heapMonitor.using; ++i)	{
 
 		if(heapMonitor.array[i] == new)
 			
 			return;
 	}
-
 	
 	if(heapMonitor.using == heapMonitor.size)	{
 		
-		void ** reallocReturn = (void **) realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
+		heapMonitor.array = (void **) realloc(heapMonitor.array, (heapMonitor.size + BLOCK) * sizeof(void*));
 
-		errorManagement(isNull(reallocReturn), "Memory allocated failed");	
+		errorManagement(isNull(heapMonitor.array), "Memory allocated failed");	
 
-		heapMonitor.array = (void **) reallocReturn;
-		
 		heapMonitor.size += BLOCK;
 	}
 
-	heapMonitor.array[heapMonitor.using++] = new;
+	heapMonitor.array[heapMonitor.using++] = (void *) new;
 }
 
 
@@ -226,3 +227,4 @@ void whatsUpHeapMonitor()	{
 	printf(HEAP_MONITOR_DIALOG_FORMAT, heapMonitor.dialog[heapMonitor.dialogIndex]);
 	changeHeapMonitorDialog();
 }
+

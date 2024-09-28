@@ -1,3 +1,5 @@
+// This is a personal academic project. Dear PVS-Studio, please check it.
+// PVS-Studio Static Code Analyzer for C, C++ and C#: http://www.viva64.com
 //slave.c
 
 #include <stdio.h>
@@ -10,20 +12,18 @@
 #define TYPE "r"		// Read file.
 
 
-char * getHash(const char * path);
-char * getHashInput(const char * path);
-char * getFileName(const char * path);
+void getHash(const char * path, char * hash);
+void getHashInput(const char * path, char * input);
+void getFileName(const char * paht, char * fileName);
 
 
 int main(int argc, char * argv[])	{
 
-	char buf [100] = {0};
+	char buf [BUFF_LEN] = {0};
 	int i = 0;
 
 	int readReturn;
 	
-	char * hash;
-	char * name;
 	int pid;
 
 	while((readReturn = read(STDIN_FILENO, buf+i, 1)) > 0)	{
@@ -34,10 +34,12 @@ int main(int argc, char * argv[])	{
 
 			buf[--i] = '\0';
 
-			hash = getHash(buf);
+			char hash[BUFF_LEN] = {0};
+			getHash(buf, hash);
 
-	        	name = getFileName(buf);
-	
+			char name[BUFF_LEN] = {0};
+			getFileName(buf, name);
+
         		pid = (int) getpid();
 
 		//Everything is ok? (getpid() is always successful)
@@ -50,12 +52,10 @@ int main(int argc, char * argv[])	{
 		//Reset buffer:
 		
 			i = 0;
-			for(int j=0; buf[j]!=0; j++)	{
+			for(int j=0; j<BUFF_LEN; j++)	{
 					
 				buf[j] = 0;
 			}
-
-			freeHeap();
 		}
 	}
 
@@ -67,60 +67,55 @@ int main(int argc, char * argv[])	{
 
 
 
-char * getHash(const char * path)	{
+//char * getHash(const char * path)	{
+//
+void getHash(const char * path, char * hash) {
 
 	if(isNull(path))	{
 
-		return NULL;
+    return;
 	}
 
-        char * buffer = safeCalloc(HASH_LENGTH+1, sizeof(char));
-	
-	char * input = getHashInput(path);
-	
+	char input[BUFF_LEN] = {0};
+	getHashInput(path, input);
+
 	if(isNull(input))	{
 
-		return NULL;
+		return;
 	}
 
         FILE * file = popen(input, TYPE);
 	errorManagement(file == NULL, "popen failed");
 
-        fgets(buffer, HASH_LENGTH+1, file);
+        fgets(hash, HASH_LENGTH+1, file);
 
 	int closed = pclose(file);
 	errorManagement(closed == -1, "pclose failed");
 
-	return buffer; 
-
 }
 
 
 
-char * getHashInput(const char * path)	{
+void getHashInput(const char * path, char * input)	{
 
 	if(isNull(path))	{
 
-		return NULL;
+		  return;
 	}
 
-	char * input = safeCalloc(1+strlen(COMMAND)+strlen(path), sizeof(char));
-	
         strcat(input, COMMAND);
         strcat(input, " ");
         strcat(input, path);
 
-	return input;
-
 }
 
 
 
-char * getFileName(const char * path)	{
+void getFileName(const char * path, char * fileName)	{
 
 	if(isNull(path))	{
 
-		return NULL;
+    return;
 	}
 
 //Find the '/' (useful when @path is an absolute path):
@@ -132,13 +127,9 @@ char * getFileName(const char * path)	{
 			j--;
 	}
 
-    char * fileName = safeCalloc(i-j, 1);
-
     int k=0;
     while(path[j]!=0)       {
 
             fileName[k++] = path[j++];
     }
-		
-	return fileName;
 }

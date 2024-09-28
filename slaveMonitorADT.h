@@ -15,7 +15,6 @@
     	#define SLAVES_MIN 5
     	#define FILES_PER_SLAVE 10
 		#define START_FILES 2
-		#define BUFF_LEN 200
 
 		#define CHILD_PATH "./slave"
 		#define SLAVE_ARGV {CHILD_PATH, NULL}

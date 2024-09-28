@@ -41,7 +41,7 @@ int main(int argc, char * argv[]) {
 	char toPrint[SHBUFFER_SIZE] = {0};
 	int i=0;
 
-	while( (readShm(shm, &buf, 1) < SHBUFFER_SIZE) && (buf != CHAR_EOF) )	{
+	while( (readShm(shm, &buf, 1) < SHBUFFER_SIZE) && buf != CHAR_EOF && buf != EOF )	{
 		
     if(buf != '\0') {
 

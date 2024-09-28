@@ -18,7 +18,7 @@
 	#define SYNC_NAME "/semSync-"
 	#define KILL_NAME "/semKill-"
 
-	#define CHAR_EOF 255
+	#define CHAR_EOF 255 
 	typedef struct sharedCDT * sharedADT;
 
 
